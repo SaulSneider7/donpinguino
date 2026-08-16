@@ -1,0 +1,35 @@
+
+
+.select2-container {
+    width: 100% !important;
+}
+
+#modalProducto .modal-dialog {
+    max-height: calc(100vh - 2rem);
+}
+
+#modalProducto .modal-dialog-scrollable .modal-content {
+    max-height: calc(100vh - 2rem);
+}
+
+#modalProducto .modal-dialog-scrollable .modal-body {
+    max-height: calc(100vh - 12rem);
+    overflow-y: auto;
+}
+
+
+
+#sidebarApp .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+}
+
+#sidebarApp .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 991.98px) {
+    body {
+        padding-bottom: 65px;
+    }
+}
