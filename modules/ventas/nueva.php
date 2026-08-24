@@ -151,15 +151,48 @@ require_once __DIR__ . '/../../includes/navbar.php';
                             </h5>
 
 
-                            <div class="d-flex justify-content-between mb-2">
+                            <!-- PRECIO FINAL DE PRODUCTOS -->
 
-                                <span class="text-muted">
-                                    Subtotal
-                                </span>
+                            <div class="mb-3">
 
-                                <span id="resumenSubtotal">
-                                    S/ 0.00
-                                </span>
+                                <label class="form-label small text-muted mb-1">
+                                    Productos
+                                </label>
+
+                                <div class="input-group">
+
+                                    <span class="input-group-text">
+                                        S/
+                                    </span>
+
+                                    <input
+                                        type="number"
+                                        class="form-control fw-semibold"
+                                        id="resumenSubtotal"
+                                        value="0.00"
+                                        min="0"
+                                        step="0.01"
+                                        readonly
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        id="btnEditarSubtotal"
+                                        title="Modificar precio final"
+                                    >
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+
+                                </div>
+
+                                <div
+                                    class="form-text"
+                                    id="textoPrecioManual"
+                                    style="display:none;"
+                                >
+                                    Precio modificado manualmente.
+                                </div>
 
                             </div>
 
@@ -183,6 +216,60 @@ require_once __DIR__ . '/../../includes/navbar.php';
 
                             <hr>
 
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="delivery"
+                                    class="form-label small text-muted mb-1"
+                                >
+                                    Delivery
+                                </label>
+
+                                <div class="input-group">
+
+                                    <span class="input-group-text">
+                                        S/
+                                    </span>
+
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        id="delivery"
+                                        min="0"
+                                        step="0.50"
+                                        value="0.00"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                            <hr>
+
+
+
+                            <div class="mb-3">
+
+                                <label
+                                    for="observacionVenta"
+                                    class="form-label small text-muted mb-1"
+                                >
+                                    Comentario
+                                    <span class="text-muted fw-normal">
+                                        (opcional)
+                                    </span>
+                                </label>
+
+                                <textarea
+                                    class="form-control"
+                                    id="observacionVenta"
+                                    rows="2"
+                                    maxlength="500"
+                                    placeholder="Ej. Precio acordado con cliente..."
+                                ></textarea>
+
+                            </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -560,6 +647,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let calculoActual = null;
 
     let timerCalculo = null;
+
+    /*
+    * Indica si el administrador modificó manualmente
+    * el precio final de los productos.
+    */
+    let precioManualEditado = false;
 
 
     // ========================================================
@@ -1320,13 +1413,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function pintarCalculo(data) {
 
+        /*
+        * Cada vez que cambia el carrito,
+        * volvemos al cálculo automático.
+        */
+        precioManualEditado = false;
+
         $('#resumenSubtotal')
-            .text(
-                'S/ '
-                +
+            .val(
                 Number(
-                    data.subtotal
+                    data.total
                 ).toFixed(2)
+            )
+            .prop(
+                'readonly',
+                true
+            );
+
+
+        $('#textoPrecioManual')
+            .hide();
+
+
+        $('#btnEditarSubtotal')
+            .html(
+                '<i class="fa-solid fa-pen"></i>'
             );
 
 
@@ -1501,6 +1612,203 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // ========================================================
+    // EDITAR PRECIO FINAL DE PRODUCTOS
+    // ========================================================
+
+    $('#btnEditarSubtotal').on(
+        'click',
+        function () {
+
+            const $input =
+                $('#resumenSubtotal');
+
+
+            if (
+                $input.prop('readonly')
+            ) {
+
+                $input
+                    .prop(
+                        'readonly',
+                        false
+                    )
+                    .trigger('focus')
+                    .select();
+
+
+                $(this).html(
+                    '<i class="fa-solid fa-check"></i>'
+                );
+
+            } else {
+
+                finalizarEdicionPrecio();
+            }
+        }
+    );
+
+
+
+    function finalizarEdicionPrecio() {
+
+        const $input =
+            $('#resumenSubtotal');
+
+
+        let valor =
+            Number(
+                $input.val()
+            );
+
+
+        if (
+            !Number.isFinite(valor)
+            ||
+            valor < 0
+        ) {
+
+            valor =
+                Number(
+                    calculoActual?.total
+                    || 0
+                );
+        }
+
+
+        $input
+            .val(
+                valor.toFixed(2)
+            )
+            .prop(
+                'readonly',
+                true
+            );
+
+
+        precioManualEditado = true;
+
+
+        $('#textoPrecioManual')
+            .show();
+
+
+        $('#btnEditarSubtotal')
+            .html(
+                '<i class="fa-solid fa-pen"></i>'
+            );
+
+
+        actualizarTotalFinal();
+    }
+
+
+    $('#resumenSubtotal').on(
+        'input',
+        function () {
+
+            precioManualEditado = true;
+
+            actualizarTotalFinal();
+        }
+    );
+
+    $('#resumenSubtotal').on(
+        'blur',
+        function () {
+
+            if (
+                !$(this).prop('readonly')
+            ) {
+
+                finalizarEdicionPrecio();
+            }
+        }
+    );
+
+    $('#delivery').on(
+        'input',
+        function () {
+
+            actualizarTotalFinal();
+        }
+    );
+
+
+
+    function obtenerTotalProductos() {
+
+        let valor =
+            Number(
+                $('#resumenSubtotal').val()
+                || 0
+            );
+
+
+        if (
+            !Number.isFinite(valor)
+            ||
+            valor < 0
+        ) {
+            valor = 0;
+        }
+
+
+        return valor;
+    }
+
+
+    function obtenerDelivery() {
+
+        let valor =
+            Number(
+                $('#delivery').val()
+                || 0
+            );
+
+
+        if (
+            !Number.isFinite(valor)
+            ||
+            valor < 0
+        ) {
+            valor = 0;
+        }
+
+
+        return valor;
+    }
+
+
+    function obtenerTotalFinal() {
+
+        return (
+            obtenerTotalProductos()
+            +
+            obtenerDelivery()
+        );
+    }
+
+
+    function actualizarTotalFinal() {
+
+        const total =
+            obtenerTotalFinal();
+
+
+        $('#resumenTotal')
+            .text(
+                'S/ '
+                +
+                total.toFixed(2)
+            );
+
+
+        actualizarPago();
+    }
+
+
+
+    // ========================================================
     // PAGO
     // ========================================================
 
@@ -1558,9 +1866,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function actualizarPago() {
 
         const total =
-            Number(
-                calculoActual?.total || 0
-            );
+            obtenerTotalFinal();
 
 
         const tipo =
@@ -1679,10 +1985,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     tipoPago === 'COMPLETO'
                 ) {
 
-                    montoPagado =
-                        Number(
-                            calculoActual.total
-                        );
+                    montoPagado = obtenerTotalFinal()
 
                 } else if (
                     tipoPago === 'PARCIAL'
@@ -1776,11 +2079,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     (
                         montoPagado <= 0
                         ||
-                        montoPagado
-                            >=
-                            Number(
-                                calculoActual.total
-                            )
+                        montoPagado >= obtenerTotalFinal()
                     )
                 ) {
 
@@ -1820,7 +2119,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         ),
 
                     envases:
-                        envases
+                        envases,
+
+                    total_manual:
+                        precioManualEditado
+                            ? obtenerTotalProductos()
+                            : null,
+
+                    delivery:
+                        obtenerDelivery(),
+
+                    observacion:
+                        $('#observacionVenta')
+                            .val()
+                            .trim(),
                 });
 
             }
@@ -1872,6 +2184,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 metodo_pago:
                     data.metodo_pago,
+
+                total_manual:
+                    data.total_manual === null
+                        ? ''
+                        : data.total_manual,
+
+                delivery:
+                    data.delivery,
+
+                observacion:
+                    data.observacion,
 
                 items:
                     JSON.stringify(

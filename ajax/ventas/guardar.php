@@ -876,6 +876,52 @@ $montoPagadoEnviado =
     );
 
 
+$delivery =
+    round(
+        max(
+            0,
+            (float) (
+                $_POST['delivery']
+                ?? 0
+            )
+        ),
+        2
+    );
+
+
+$totalManual =
+    isset(
+        $_POST['total_manual']
+    )
+    &&
+    $_POST['total_manual'] !== ''
+        ? round(
+            (float)
+            $_POST['total_manual'],
+            2
+        )
+        : null;
+
+
+$observacionVenta =
+    trim(
+        $_POST['observacion']
+        ?? ''
+    );
+
+if (
+    $totalManual !== null
+    &&
+    $totalManual < 0
+) {
+
+    responder(
+        false,
+        'El precio manual no puede ser negativo.'
+    );
+}
+
+
 $items =
     json_decode(
         $_POST['items']
@@ -1279,6 +1325,42 @@ try {
         );
 
 
+    /*
+    * Guardamos el valor automático de productos
+    * antes de aplicar el posible ajuste manual.
+    */
+    $totalProductosCalculado =
+        $totalVenta;
+
+
+    /*
+    * Si el administrador modificó manualmente
+    * el precio final, utilizamos ese valor.
+    */
+    if ($totalManual !== null) {
+
+        $totalProductosFinal =
+            $totalManual;
+
+    } else {
+
+        $totalProductosFinal =
+            $totalProductosCalculado;
+    }
+
+
+    /*
+    * El delivery se suma al final.
+    */
+    $totalVenta =
+        round(
+            $totalProductosFinal
+            +
+            $delivery,
+            2
+        );
+
+
     /* ========================================================
        PAGO
     ======================================================== */
@@ -1461,13 +1543,18 @@ try {
             descuento_promociones,
             descuento_manual,
 
+            delivery,
+            total_manual,
+
             total,
 
             total_pagado,
             saldo_pendiente,
 
             estado_pago,
-            estado
+            estado,
+
+            observacion
         )
         VALUES (
             ?,
@@ -1479,12 +1566,17 @@ try {
             0,
 
             ?,
+            ?,
+
+            ?,
 
             ?,
             ?,
 
             ?,
-            'ACTIVA'
+            'ACTIVA',
+
+            ?
         )
     ";
 
@@ -1496,19 +1588,24 @@ try {
 
 
     $stmtVenta->bind_param(
-        'iiddddds',
+        'iidddddddss',
 
         $clienteId,
         $usuarioId,
 
         $subtotalVenta,
         $descuentoPromociones,
+
+        $delivery,
+        $totalManual,
+
         $totalVenta,
 
         $montoPagado,
         $saldoPendiente,
 
-        $estadoPago
+        $estadoPago,
+        $observacionVenta
     );
 
 

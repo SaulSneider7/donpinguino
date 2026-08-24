@@ -1471,3 +1471,13 @@ GROUP BY
 -- ============================================================
 -- FIN DE LA ESTRUCTURA
 -- ============================================================
+
+
+
+
+-- DELIVERY
+ALTER TABLE ventas
+ADD COLUMN delivery DECIMAL(12,2) NOT NULL DEFAULT 0.00
+AFTER descuento_manual,
+ADD COLUMN total_manual DECIMAL(12,2) NULL
+AFTER delivery;
