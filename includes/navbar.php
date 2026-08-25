@@ -286,6 +286,27 @@ function navActive(
         </a>
 
 
+        <!-- GASTOS -->
+        <a
+            href="<?= BASE_URL ?>modules/gastos/index.php"
+            class="
+                nav-link
+                text-white
+                rounded
+                px-3
+                py-2
+                mb-1
+                <?= navActive(
+                    '/modules/gastos/',
+                    $currentPath
+                ) ?>
+            "
+        >
+            <i class="fa-solid fa-wallet me-3"></i>
+            Gastos
+        </a>
+
+
         <!-- ENVASES -->
         <a
             href="<?= BASE_URL ?>modules/envases/index.php"

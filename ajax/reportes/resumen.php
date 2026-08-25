@@ -334,6 +334,86 @@ $regalos =
         ->fetch_assoc()['total'];
 
 
+
+
+/* ============================================================
+   GASTOS
+============================================================ */
+
+$sql = "
+    SELECT
+        COUNT(*) AS cantidad,
+
+        COALESCE(
+            SUM(monto),
+            0
+        ) AS total
+
+    FROM gastos
+
+    WHERE
+        activo = 1
+        AND fecha BETWEEN ? AND ?
+";
+
+
+$stmt =
+    $conn->prepare($sql);
+
+
+$fechaDesde =
+    $fechaInicio;
+
+$fechaHasta =
+    $fechaFin;
+
+
+$stmt->bind_param(
+    'ss',
+    $fechaDesde,
+    $fechaHasta
+);
+
+
+$stmt->execute();
+
+
+$rowGastos =
+    $stmt
+        ->get_result()
+        ->fetch_assoc();
+
+
+$gastos =
+    round(
+        (float)
+        $rowGastos['total'],
+        2
+    );
+
+
+$cantidadGastos =
+    (int)
+    $rowGastos['cantidad'];
+
+
+/* ============================================================
+   UTILIDAD NETA ESTIMADA
+============================================================ */
+
+$utilidadNeta =
+    round(
+        (float)
+        $rentabilidad['utilidad']
+        -
+        $gastos,
+        2
+    );
+
+
+
+
+
 /* ============================================================
    RESPONSE
 ============================================================ */
@@ -402,6 +482,15 @@ responder(
             round(
                 $regalos,
                 2
-            )
+            ),
+
+        'gastos' =>
+            $gastos,
+
+        'cantidad_gastos' =>
+            $cantidadGastos,
+
+        'utilidad_neta' =>
+            $utilidadNeta,
     ]
 );

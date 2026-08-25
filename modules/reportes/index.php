@@ -28,6 +28,33 @@ $hoy = date('Y-m-d');
     </div>
 
 
+
+
+    <div class="mb-4">
+
+        <div class="btn-group">
+
+            <a
+                href="<?= BASE_URL ?>modules/reportes/index.php"
+                class="btn btn-dark"
+            >
+                <i class="fa-solid fa-table-list me-2"></i>
+                Resumen
+            </a>
+
+            <a
+                href="<?= BASE_URL ?>modules/reportes/graficos.php"
+                class="btn btn-outline-dark"
+            >
+                <i class="fa-solid fa-chart-line me-2"></i>
+                Gráficos
+            </a>
+
+        </div>
+
+    </div>
+
+
     <!-- ======================================================
          FILTROS
     ======================================================= -->
@@ -353,6 +380,68 @@ $hoy = date('Y-m-d');
                     >
                         S/ 0.00
                     </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- GASTOS -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="small text-muted">
+                        Gastos
+                    </div>
+
+                    <div
+                        class="fs-4 fw-bold text-danger mt-1"
+                        id="repGastos"
+                    >
+                        S/ 0.00
+                    </div>
+
+                    <small
+                        class="text-muted"
+                        id="repCantidadGastos"
+                    >
+                        0 gastos
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- UTILIDAD NETA -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <div class="small text-muted">
+                        Utilidad neta estimada
+                    </div>
+
+                    <div
+                        class="fs-4 fw-bold text-success mt-1"
+                        id="repUtilidadNeta"
+                    >
+                        S/ 0.00
+                    </div>
+
+                    <small class="text-muted">
+                        Utilidad bruta - gastos
+                    </small>
 
                 </div>
 
@@ -1015,6 +1104,35 @@ document.addEventListener('DOMContentLoaded', function () {
                     .text(
                         dinero(
                             r.ticket_promedio
+                        )
+                    );
+                
+                $('#repGastos')
+                    .text(
+                        dinero(
+                            r.gastos
+                        )
+                    );
+
+
+                $('#repCantidadGastos')
+                    .text(
+                        r.cantidad_gastos
+                        +
+                        (
+                            Number(
+                                r.cantidad_gastos
+                            ) === 1
+                                ? ' gasto'
+                                : ' gastos'
+                        )
+                    );
+
+
+                $('#repUtilidadNeta')
+                    .text(
+                        dinero(
+                            r.utilidad_neta
                         )
                     );
             },

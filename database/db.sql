@@ -1481,3 +1481,47 @@ ADD COLUMN delivery DECIMAL(12,2) NOT NULL DEFAULT 0.00
 AFTER descuento_manual,
 ADD COLUMN total_manual DECIMAL(12,2) NULL
 AFTER delivery;
+
+
+CREATE TABLE gastos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    usuario_id BIGINT UNSIGNED NOT NULL,
+
+    tipo ENUM(
+        'AGUA',
+        'LUZ',
+        'COMIDA',
+        'INSUMOS',
+        'DELIVERY',
+        'ALQUILER',
+        'OTRO'
+    ) NOT NULL DEFAULT 'OTRO',
+
+    descripcion VARCHAR(255) NOT NULL,
+
+    monto DECIMAL(12,2) NOT NULL,
+
+    fecha DATE NOT NULL,
+
+    observacion TEXT NULL,
+
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_gastos_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT chk_gastos_monto
+        CHECK (monto > 0),
+
+    INDEX idx_gastos_fecha (fecha),
+    INDEX idx_gastos_tipo (tipo),
+    INDEX idx_gastos_activo_fecha (activo, fecha)
+);

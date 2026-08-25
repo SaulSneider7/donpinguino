@@ -18,7 +18,7 @@ $conn = new mysqli(
 );
 
 if ($conn->connect_error) {
-    die('Error de conexión a la base de datos.');
+    die('Error de conexion a la base de datos.');
 }
 
 $conn->set_charset('utf8mb4');
