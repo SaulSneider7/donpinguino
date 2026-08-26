@@ -77,7 +77,7 @@ require_once __DIR__ . '/../../includes/navbar.php';
     id="modalProducto"
     tabindex="-1"
     aria-hidden="true"
->
+    >
 
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
 
@@ -578,16 +578,107 @@ require_once __DIR__ . '/../../includes/navbar.php';
 
                                                 <div class="col-12">
 
-                                                    <label class="form-label">
-                                                        URL de imagen
+                                                    <label class="form-label fw-semibold">
+                                                        Imagen del producto
                                                     </label>
 
+                                                    <!-- Guardamos aquí la ruta actual de la imagen -->
                                                     <input
-                                                        type="text"
-                                                        class="form-control"
+                                                        type="hidden"
                                                         name="imagen_url"
                                                         id="imagen_url"
                                                     >
+
+
+                                                    <div class="row g-3 align-items-center">
+
+                                                        <!-- ARCHIVO -->
+                                                        <div class="col-12 col-md">
+
+                                                            <input
+                                                                type="file"
+                                                                class="form-control"
+                                                                id="imagenProducto"
+                                                                accept="image/jpeg,image/png,image/webp"
+                                                            >
+
+                                                            <div class="form-text">
+                                                                JPG, PNG o WEBP. Máximo 5 MB.
+                                                            </div>
+
+                                                        </div>
+
+
+                                                        <!-- PREVIEW -->
+                                                        <div class="col-12 col-md-auto">
+
+                                                            <div
+                                                                class="
+                                                                    border
+                                                                    rounded
+                                                                    bg-light
+                                                                    d-flex
+                                                                    align-items-center
+                                                                    justify-content-center
+                                                                    overflow-hidden
+                                                                "
+                                                                style="
+                                                                    width: 140px;
+                                                                    height: 140px;
+                                                                "
+                                                            >
+
+                                                                <img
+                                                                    id="previewImagenProducto"
+                                                                    src=""
+                                                                    alt="Imagen del producto"
+                                                                    class="d-none"
+                                                                    style="
+                                                                        width: 100%;
+                                                                        height: 100%;
+                                                                        object-fit: contain;
+                                                                    "
+                                                                >
+
+
+                                                                <div
+                                                                    id="sinImagenProducto"
+                                                                    class="text-muted text-center small px-2"
+                                                                >
+
+                                                                    <i
+                                                                        class="fa-solid fa-image fs-3 d-block mb-2"
+                                                                    ></i>
+
+                                                                    Sin imagen
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <!-- ACCIONES IMAGEN ACTUAL -->
+                                                    <div
+                                                        class="mt-3 d-none"
+                                                        id="contenedorAccionesImagen"
+                                                    >
+
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            id="btnEliminarImagen"
+                                                        >
+
+                                                            <i class="fa-solid fa-trash me-1"></i>
+                                                            Quitar imagen
+
+                                                        </button>
+
+                                                    </div>
 
                                                 </div>
 
@@ -661,6 +752,105 @@ document.addEventListener('DOMContentLoaded', function () {
 
         modalProducto.hide();
     }
+
+
+    // ========================================================
+    // IMAGEN PRODUCTO
+    // ========================================================
+    $('#imagenProducto').on(
+        'change',
+        function () {
+
+            const archivo =
+                this.files[0];
+
+
+            if (!archivo) {
+
+                return;
+            }
+
+
+            const tiposPermitidos = [
+                'image/jpeg',
+                'image/png',
+                'image/webp'
+            ];
+
+
+            if (
+                !tiposPermitidos.includes(
+                    archivo.type
+                )
+            ) {
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Imagen inválida',
+                    text:
+                        'Seleccione una imagen JPG, PNG o WEBP.'
+                });
+
+
+                $(this).val('');
+
+                return;
+            }
+
+
+            const maximo =
+                5 * 1024 * 1024;
+
+
+            if (
+                archivo.size > maximo
+            ) {
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Imagen demasiado grande',
+                    text:
+                        'La imagen no puede superar los 5 MB.'
+                });
+
+
+                $(this).val('');
+
+                return;
+            }
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function (e) {
+
+                    $('#previewImagenProducto')
+                        .attr(
+                            'src',
+                            e.target.result
+                        )
+                        .removeClass(
+                            'd-none'
+                        );
+
+
+                    $('#sinImagenProducto')
+                        .addClass(
+                            'd-none'
+                        );
+
+                };
+
+
+            reader.readAsDataURL(
+                archivo
+            );
+
+        }
+    );
 
 
     // ========================================================
@@ -839,6 +1029,12 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#stock_minimo').val('0');
         $('#envases_por_unidad').val('1');
 
+
+        $('#imagenProducto') .val('');
+        $('#imagen_url') .val('');
+        $('#previewImagenProducto') .attr( 'src', '' ) .addClass( 'd-none' );
+        $('#sinImagenProducto') .removeClass( 'd-none' );
+        $('#contenedorAccionesImagen') .addClass( 'd-none' );
     }
 
 
@@ -917,78 +1113,304 @@ document.addEventListener('DOMContentLoaded', function () {
     // GUARDAR PRODUCTO
     // ========================================================
 
-    $('#formProducto').on('submit', function (e) {
+    $('#formProducto').on(
+        'submit',
+        function (e) {
 
-        e.preventDefault();
-
-        const $btn = $('#btnGuardarProducto');
-
-        $btn.prop('disabled', true);
-
-        $btn.html(`
-            <span class="spinner-border spinner-border-sm me-2"></span>
-            Guardando...
-        `);
+            e.preventDefault();
 
 
-        $.ajax({
+            const $form =
+                $(this);
 
-            url: '<?= BASE_URL ?>ajax/productos/guardar.php',
-            type: 'POST',
-            dataType: 'json',
-            data: $(this).serialize(),
 
-            success: function (response) {
+            const $btn =
+                $('#btnGuardarProducto');
 
-                if (!response.success) {
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
+            const archivoImagen =
+                document
+                    .getElementById(
+                        'imagenProducto'
+                    )
+                    .files[0]
+                || null;
 
-                    return;
-                }
 
-                cerrarModalProducto();
+            $btn
+                .prop(
+                    'disabled',
+                    true
+                )
+                .html(`
 
-                tabla.ajax.reload(null, false);
+                    <span
+                        class="spinner-border spinner-border-sm me-2"
+                    ></span>
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Producto guardado',
-                    text: response.message,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+                    Guardando...
 
-            },
-
-            error: function () {
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo procesar la solicitud.'
-                });
-
-            },
-
-            complete: function () {
-
-                $btn.prop('disabled', false);
-
-                $btn.html(`
-                    <i class="fa-solid fa-floppy-disk me-2"></i>
-                    Guardar
                 `);
 
-            }
 
-        });
+            $.ajax({
 
-    });
+                url:
+                    '<?= BASE_URL ?>ajax/productos/guardar.php',
+
+                type:
+                    'POST',
+
+                dataType:
+                    'json',
+
+                data:
+                    $form.serialize(),
+
+
+                success:
+                    async function (response) {
+
+                        if (
+                            !response.success
+                        ) {
+
+                            Swal.fire({
+                                icon:
+                                    'error',
+
+                                title:
+                                    'Error',
+
+                                text:
+                                    response.message
+                            });
+
+                            return;
+                        }
+
+
+                        const productoId =
+                            Number(
+                                response.id
+                                || 0
+                            );
+
+
+                        if (
+                            productoId <= 0
+                        ) {
+
+                            Swal.fire({
+                                icon:
+                                    'error',
+
+                                title:
+                                    'Error',
+
+                                text:
+                                    'El producto se guardó, pero no se obtuvo su ID.'
+                            });
+
+                            return;
+                        }
+
+
+                        /* ========================================
+                        SUBIR IMAGEN SI EXISTE
+                        ======================================== */
+
+                        if (
+                            archivoImagen
+                        ) {
+
+                            $btn.html(`
+
+                                <span
+                                    class="spinner-border spinner-border-sm me-2"
+                                ></span>
+
+                                Subiendo imagen...
+
+                            `);
+
+
+                            try {
+
+                                const responseImagen =
+                                    await subirImagenProducto(
+                                        productoId,
+                                        archivoImagen
+                                    );
+
+
+                                if (
+                                    !responseImagen.success
+                                ) {
+
+                                    /*
+                                    * El producto sí se guardó.
+                                    * Solo falló la imagen.
+                                    */
+
+                                    cerrarModalProducto();
+
+
+                                    tabla.ajax.reload(
+                                        null,
+                                        false
+                                    );
+
+
+                                    Swal.fire({
+                                        icon:
+                                            'warning',
+
+                                        title:
+                                            'Producto guardado',
+
+                                        text:
+                                            'El producto se guardó correctamente, pero no se pudo cargar la imagen: '
+                                            +
+                                            responseImagen.message
+                                    });
+
+
+                                    return;
+                                }
+
+                            } catch (error) {
+
+                                console.error(
+                                    'Error subiendo imagen:',
+                                    error
+                                );
+
+
+                                console.error(
+                                    'Status:',
+                                    error.status
+                                );
+
+
+                                console.error(
+                                    'Response:',
+                                    error.responseText
+                                );
+
+
+                                console.error(
+                                    'Status text:',
+                                    error.statusText
+                                );
+
+
+                                cerrarModalProducto();
+
+
+                                tabla.ajax.reload(
+                                    null,
+                                    false
+                                );
+
+
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Producto guardado',
+                                    text:
+                                        error.responseText
+                                            ? 'Error al subir imagen: '
+                                                + error.responseText
+                                            : 'El producto se guardó correctamente, pero ocurrió un error al subir la imagen.'
+                                });
+
+
+                                return;
+                            }
+
+                        }
+
+
+                        /* ========================================
+                        TODO CORRECTO
+                        ======================================== */
+
+                        cerrarModalProducto();
+
+
+                        tabla.ajax.reload(
+                            null,
+                            false
+                        );
+
+
+                        Swal.fire({
+
+                            icon:
+                                'success',
+
+                            title:
+                                'Producto guardado',
+
+                            text:
+                                archivoImagen
+                                    ? 'Producto e imagen guardados correctamente.'
+                                    : response.message,
+
+                            timer:
+                                1500,
+
+                            showConfirmButton:
+                                false
+
+                        });
+
+                    },
+
+
+                error:
+                    function (xhr) {
+
+                        console.error(
+                            xhr.responseText
+                        );
+
+
+                        Swal.fire({
+                            icon:
+                                'error',
+
+                            title:
+                                'Error',
+
+                            text:
+                                'No se pudo procesar la solicitud.'
+                        });
+
+                    },
+
+
+                complete:
+                    function () {
+
+                        $btn
+                            .prop(
+                                'disabled',
+                                false
+                            )
+                            .html(`
+
+                                <i class="fa-solid fa-floppy-disk me-2"></i>
+                                Guardar
+
+                            `);
+
+                    }
+
+            });
+
+        }
+    );
 
 
     // ========================================================
@@ -1029,6 +1451,65 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
 
                     const p = response.data;
+
+                    const imagen = p.imagen_url ?? '';
+
+
+                    $('#imagenProducto') .val('');
+
+
+                    $('#imagen_url') .val( imagen );
+
+
+                    if (imagen) {
+
+                        $('#previewImagenProducto')
+                            .attr(
+                                'src',
+                                '<?= BASE_URL ?>'
+                                +
+                                imagen
+                            )
+                            .removeClass(
+                                'd-none'
+                            );
+
+
+                        $('#sinImagenProducto')
+                            .addClass(
+                                'd-none'
+                            );
+
+
+                        $('#contenedorAccionesImagen')
+                            .removeClass(
+                                'd-none'
+                            );
+
+                    } else {
+
+                        $('#previewImagenProducto')
+                            .attr(
+                                'src',
+                                ''
+                            )
+                            .addClass(
+                                'd-none'
+                            );
+
+
+                        $('#sinImagenProducto')
+                            .removeClass(
+                                'd-none'
+                            );
+
+
+                        $('#contenedorAccionesImagen')
+                            .addClass(
+                                'd-none'
+                            );
+
+                    }
 
 
                     $('#productoId').val(p.id);
@@ -1204,6 +1685,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
     );
+
+    // ========================================================
+    // SUBIR IMAGEN PRODUCTO
+    // ========================================================
+    function subirImagenProducto( productoId, archivo ) {
+
+        const formData =
+            new FormData();
+
+
+        formData.append(
+            'producto_id',
+            productoId
+        );
+
+
+        formData.append(
+            'imagen',
+            archivo
+        );
+
+
+        return $.ajax({
+
+            url:
+                '<?= BASE_URL ?>ajax/productos/subir_imagen.php',
+
+            type:
+                'POST',
+
+            dataType:
+                'json',
+
+            data:
+                formData,
+
+            processData:
+                false,
+
+            contentType:
+                false
+
+        });
+    }
 
 });
 </script>

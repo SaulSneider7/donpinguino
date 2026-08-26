@@ -1,408 +1,682 @@
 <?php
 
-$pageTitle = 'Inicio';
+require_once __DIR__
+    . '/catalogo_config.php';
 
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/navbar.php';
+
+require_once __DIR__
+    . '/sistema/config/database.php';
+
+
+/* ============================================================
+   CATEGORÍAS
+============================================================ */
+
+$sqlCategorias = "
+    SELECT
+        c.id,
+        c.nombre
+
+    FROM categorias c
+
+    INNER JOIN productos p
+        ON p.categoria_id = c.id
+
+    WHERE
+        c.activo = 1
+
+        AND p.activo = 1
+
+        AND p.publicar_catalogo = 1
+
+    GROUP BY
+        c.id,
+        c.nombre,
+        c.orden_catalogo
+
+    ORDER BY
+        c.orden_catalogo ASC,
+        c.nombre ASC
+";
+
+
+$categorias =
+    $conn
+        ->query(
+            $sqlCategorias
+        )
+        ->fetch_all(
+            MYSQLI_ASSOC
+        );
+
+
+/* ============================================================
+   PRODUCTOS
+============================================================ */
+
+$sqlProductos = "
+    SELECT
+        p.id,
+
+        p.nombre,
+        p.descripcion,
+        p.presentacion,
+
+        p.tipo_producto,
+
+        p.precio_regular,
+        p.precio_venta,
+
+        p.maneja_stock,
+        p.stock_actual,
+
+        p.imagen_url,
+
+        p.destacado_catalogo,
+
+        c.id AS categoria_id,
+        c.nombre AS categoria
+
+    FROM productos p
+
+    LEFT JOIN categorias c
+        ON c.id = p.categoria_id
+
+    WHERE
+        p.activo = 1
+
+        AND p.publicar_catalogo = 1
+
+    ORDER BY
+        p.destacado_catalogo DESC,
+        p.orden_catalogo ASC,
+        p.nombre ASC
+";
+
+
+$productos =
+    $conn
+        ->query(
+            $sqlProductos
+        )
+        ->fetch_all(
+            MYSQLI_ASSOC
+        );
+
+
+function imagenProducto(
+    ?string $ruta
+): string {
+
+    if (
+        !$ruta
+    ) {
+
+        return '';
+    }
+
+
+    return SISTEMA_URL
+        . ltrim(
+            $ruta,
+            '/'
+        );
+}
 
 ?>
+<!doctype html>
 
-<main class="container-fluid py-4">
+<html lang="es">
 
-    <!-- ======================================================
-         ENCABEZADO
-    ======================================================= -->
+<head>
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+
+    <title>
+        Catálogo | <?= htmlspecialchars(CATALOGO_NOMBRE) ?>
+    </title>
+
+
+    <meta
+        name="description"
+        content="Catálogo virtual de Don Pingüino. Cervezas, licores, combos, hielo, bebidas y más."
+    >
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- CSS -->
+
+    <link
+        href="<?= CATALOGO_BASE_URL ?>assets/css/catalogo.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav
+    class="
+        navbar
+        navbar-expand-lg
+        bg-dark
+        navbar-dark
+        sticky-top
+        shadow-sm
+    "
+>
+
+    <div class="container">
+
+        <a
+            class="navbar-brand fw-bold"
+            href="/"
+        >
+
+            <i class="fa-solid fa-snowflake me-2"></i>
+
+            Don Pingüino
+
+        </a>
+
+
+        <button
+            type="button"
+            class="btn btn-warning position-relative"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#carritoOffcanvas"
+        >
+
+            <i class="fa-solid fa-cart-shopping"></i>
+
+            <span class="d-none d-sm-inline ms-1">
+                Carrito
+            </span>
+
+
+            <span
+                class="
+                    position-absolute
+                    top-0
+                    start-100
+                    translate-middle
+                    badge
+                    rounded-pill
+                    bg-danger
+                "
+                id="cantidadCarrito"
+            >
+                0
+            </span>
+
+        </button>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="bg-dark text-white py-5">
+
+    <div class="container">
+
+        <div class="row align-items-center g-4">
+
+            <div class="col-12 col-lg-7">
+
+                <div
+                    class="
+                        text-warning
+                        fw-semibold
+                        small
+                        mb-2
+                    "
+                >
+                    CATÁLOGO VIRTUAL
+                </div>
+
+
+                <h1 class="display-5 fw-bold">
+                    ¿Qué vamos a tomar hoy?
+                </h1>
+
+
+                <p class="lead text-white-50 mb-0">
+                    Encuentra tus bebidas favoritas y envía tu pedido directamente por WhatsApp.
+                </p>
+
+            </div>
+
+
+            <div class="col-12 col-lg-5">
+
+                <div class="input-group input-group-lg">
+
+                    <span class="input-group-text bg-white">
+
+                        <i class="fa-solid fa-magnifying-glass"></i>
+
+                    </span>
+
+
+                    <input
+                        type="search"
+                        class="form-control"
+                        id="buscarProducto"
+                        placeholder="Buscar Pilsen, ron, hielo..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     CATÁLOGO
+========================================================= -->
+
+<main class="container py-4">
+
+
+    <!-- CATEGORÍAS -->
+
+    <div
+        class="
+            d-flex
+            gap-2
+            overflow-auto
+            pb-3
+            mb-3
+        "
+        id="categoriasCatalogo"
+    >
+
+        <button
+            type="button"
+            class="btn btn-dark rounded-pill filtro-categoria active"
+            data-categoria="0"
+        >
+            Todos
+        </button>
+
+
+        <?php foreach ($categorias as $categoria): ?>
+
+            <button
+                type="button"
+                class="btn btn-outline-dark rounded-pill filtro-categoria text-nowrap"
+                data-categoria="<?= (int) $categoria['id'] ?>"
+            >
+
+                <?= htmlspecialchars(
+                    $categoria['nombre']
+                ) ?>
+
+            </button>
+
+        <?php endforeach; ?>
+
+    </div>
+
+
+    <!-- TÍTULO -->
+
+    <div
+        class="
+            d-flex
+            justify-content-between
+            align-items-end
+            mb-4
+        "
+    >
 
         <div>
 
-            <h1 class="h3 fw-bold mb-1">
-                Inicio
-            </h1>
+            <h2 class="h4 fw-bold mb-1">
+                Productos
+            </h2>
 
-            <p class="text-muted mb-0">
-                Resumen de Don Pingüino
-            </p>
+            <div
+                class="text-muted"
+                id="cantidadResultados"
+            >
+            </div>
 
         </div>
-
-
-        <a
-            href="<?= BASE_URL ?>modules/ventas/nueva.php"
-            class="btn btn-warning btn-lg fw-semibold"
-        >
-            <i class="fa-solid fa-plus me-2"></i>
-            Nueva venta
-        </a>
 
     </div>
 
 
-    <!-- ======================================================
-         MÉTRICAS
-    ======================================================= -->
+    <!-- PRODUCTOS -->
 
-    <div class="row g-3 mb-4">
+    <div
+        class="row g-3"
+        id="contenedorProductos"
+    >
 
-        <!-- VENTAS -->
-        <div class="col-12 col-sm-6 col-xl-3">
+        <?php foreach ($productos as $producto): ?>
 
-            <div class="card border-0 shadow-sm h-100">
+            <?php
 
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Ventas de hoy
-                            </div>
-
-                            <div
-                                class="fs-3 fw-bold mt-1"
-                                id="dashboardVentasHoy"
-                            >
-                                S/ 0.00
-                            </div>
-
-                            <small
-                                class="text-muted"
-                                id="dashboardVentasCantidad"
-                            >
-                                0 ventas
-                            </small>
-
-                        </div>
+            $manejaStock =
+                (int)
+                $producto['maneja_stock'];
 
 
-                        <div class="fs-2 text-success">
-
-                            <i class="fa-solid fa-cash-register"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- UTILIDAD -->
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Utilidad bruta hoy
-                            </div>
-
-                            <div
-                                class="fs-3 fw-bold mt-1"
-                                id="dashboardUtilidad"
-                            >
-                                S/ 0.00
-                            </div>
-
-                            <small class="text-muted">
-                                Según costos registrados
-                            </small>
-
-                        </div>
+            /*
+             * Para SIMPLE:
+             * agotado si maneja stock y stock <= 0.
+             *
+             * En combos posteriormente podemos calcular
+             * disponibilidad real por componentes.
+             */
+            $agotado =
+                $producto['tipo_producto'] === 'SIMPLE'
+                &&
+                $manejaStock === 1
+                &&
+                (float)
+                $producto['stock_actual'] <= 0;
 
 
-                        <div class="fs-2 text-primary">
-
-                            <i class="fa-solid fa-chart-line"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
+            $imagen =
+                imagenProducto(
+                    $producto['imagen_url']
+                );
 
 
-        <!-- DEUDA -->
-        <div class="col-12 col-sm-6 col-xl-3">
+            $nombreBusqueda =
+                mb_strtolower(
+                    $producto['nombre']
+                    . ' '
+                    . (
+                        $producto['presentacion']
+                        ?? ''
+                    )
+                    . ' '
+                    . (
+                        $producto['categoria']
+                        ?? ''
+                    )
+                );
+
+            ?>
+
 
             <div
-                class="card border-0 shadow-sm h-100"
-                role="button"
-                id="cardDeudas"
+                class="
+                    col-6
+                    col-md-4
+                    col-lg-3
+                    producto-catalogo
+                "
+
+                data-categoria="<?= (int) ($producto['categoria_id'] ?? 0) ?>"
+
+                data-busqueda="<?= htmlspecialchars(
+                    $nombreBusqueda,
+                    ENT_QUOTES
+                ) ?>"
             >
 
-                <div class="card-body">
+                <div
+                    class="
+                        card
+                        border-0
+                        shadow-sm
+                        h-100
+                        overflow-hidden
+                    "
+                >
 
-                    <div class="d-flex justify-content-between">
 
-                        <div>
+                    <!-- IMAGEN -->
 
-                            <div class="text-muted small">
-                                Pendiente por cobrar
-                            </div>
+                    <div class="producto-imagen">
+
+                        <?php if ($imagen): ?>
+
+                            <img
+                                src="<?= htmlspecialchars($imagen) ?>"
+                                alt="<?= htmlspecialchars($producto['nombre']) ?>"
+                                loading="lazy"
+                            >
+
+                        <?php else: ?>
 
                             <div
-                                class="fs-3 fw-bold text-danger mt-1"
-                                id="dashboardDeuda"
+                                class="
+                                    h-100
+                                    d-flex
+                                    align-items-center
+                                    justify-content-center
+                                    bg-body-secondary
+                                    text-secondary
+                                "
                             >
-                                S/ 0.00
+
+                                <i class="fa-solid fa-wine-bottle fa-3x"></i>
+
                             </div>
 
-                            <small
-                                class="text-muted"
-                                id="dashboardDeudores"
+                        <?php endif; ?>
+
+
+                        <?php if ((int) $producto['destacado_catalogo'] === 1): ?>
+
+                            <span
+                                class="
+                                    badge
+                                    text-bg-warning
+                                    position-absolute
+                                    top-0
+                                    start-0
+                                    m-2
+                                "
                             >
-                                0 clientes
-                            </small>
+                                Destacado
+                            </span>
 
-                        </div>
-
-
-                        <div class="fs-2 text-danger">
-
-                            <i class="fa-solid fa-hand-holding-dollar"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
+                        <?php endif; ?>
 
 
-        <!-- STOCK BAJO -->
-        <div class="col-12 col-sm-6 col-xl-3">
+                        <?php if ($agotado): ?>
 
-            <a
-                href="<?= BASE_URL ?>modules/stock/index.php"
-                class="text-decoration-none"
-            >
+                            <span
+                                class="
+                                    badge
+                                    text-bg-dark
+                                    position-absolute
+                                    top-0
+                                    end-0
+                                    m-2
+                                "
+                            >
+                                Agotado
+                            </span>
 
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-body">
-
-                        <div class="d-flex justify-content-between">
-
-                            <div>
-
-                                <div class="text-muted small">
-                                    Stock bajo
-                                </div>
-
-                                <div
-                                    class="fs-3 fw-bold mt-1"
-                                    id="dashboardStockBajo"
-                                >
-                                    0
-                                </div>
-
-                                <small class="text-muted">
-                                    Productos
-                                </small>
-
-                            </div>
-
-
-                            <div class="fs-2 text-warning">
-
-                                <i class="fa-solid fa-box-open"></i>
-
-                            </div>
-
-                        </div>
+                        <?php endif; ?>
 
                     </div>
 
-                </div>
 
-            </a>
+                    <!-- CUERPO -->
 
-        </div>
-
-
-        <!-- ENVASES -->
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <a
-                href="<?= BASE_URL ?>modules/envases/index.php"
-                class="text-decoration-none"
-            >
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-muted small">
-                            Envases pendientes
-                        </div>
-
-                        <div
-                            class="fs-3 fw-bold text-warning mt-1"
-                            id="dashboardEnvases"
-                        >
-                            0
-                        </div>
-
-                        <small
-                            class="text-muted"
-                            id="dashboardCuentasEnvases"
-                        >
-                            0 cuentas
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- COMPRAS -->
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <a
-                href="<?= BASE_URL ?>modules/compras/index.php"
-                class="text-decoration-none"
-            >
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-muted small">
-                            Compras de hoy
-                        </div>
-
-                        <div
-                            class="fs-3 fw-bold mt-1"
-                            id="dashboardCompras"
-                        >
-                            S/ 0.00
-                        </div>
-
-                        <small
-                            class="text-muted"
-                            id="dashboardComprasCantidad"
-                        >
-                            0 compras
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- REGALOS -->
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <a
-                href="<?= BASE_URL ?>modules/regalos/index.php"
-                class="text-decoration-none"
-            >
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-body">
-
-                        <div class="text-muted small">
-                            Regalos este mes
-                        </div>
-
-                        <div
-                            class="fs-3 fw-bold mt-1"
-                            id="dashboardRegalos"
-                        >
-                            S/ 0.00
-                        </div>
-
-                        <small
-                            class="text-muted"
-                            id="dashboardRegalosCantidad"
-                        >
-                            0 registros
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- GASTOS -->
-        <div class="col-12 col-sm-6 col-xl-3">
-
-            <a
-                href="<?= BASE_URL ?>modules/gastos/index.php"
-                class="text-decoration-none text-reset"
-            >
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
 
                         <div
                             class="
-                                d-flex
-                                justify-content-between
-                                align-items-start
+                                small
+                                text-muted
+                                mb-1
                             "
                         >
 
-                            <div>
+                            <?= htmlspecialchars(
+                                $producto['categoria']
+                                ?? 'Otros'
+                            ) ?>
 
-                                <div class="small text-muted">
-                                    Gastos este mes
-                                </div>
+                        </div>
+
+
+                        <h3 class="h6 fw-bold mb-1">
+
+                            <?= htmlspecialchars(
+                                $producto['nombre']
+                            ) ?>
+
+                        </h3>
+
+
+                        <?php if ($producto['presentacion']): ?>
+
+                            <div class="small text-muted mb-3">
+
+                                <?= htmlspecialchars(
+                                    $producto['presentacion']
+                                ) ?>
+
+                            </div>
+
+                        <?php endif; ?>
+
+
+                        <div class="mt-auto">
+
+
+                            <!-- PRECIO REGULAR -->
+
+                            <?php
+                            if (
+                                (float)
+                                $producto['precio_regular']
+                                >
+                                (float)
+                                $producto['precio_venta']
+                            ):
+                            ?>
 
                                 <div
-                                    class="fs-4 fw-bold text-danger mt-1"
-                                    id="dashboardGastosMes"
+                                    class="
+                                        small
+                                        text-muted
+                                        text-decoration-line-through
+                                    "
                                 >
-                                    S/ 0.00
+
+                                    S/
+                                    <?= number_format(
+                                        (float)
+                                        $producto['precio_regular'],
+                                        2
+                                    ) ?>
+
                                 </div>
 
-                                <small
-                                    class="text-muted"
-                                    id="dashboardGastosCantidad"
-                                >
-                                    0 gastos
-                                </small>
+                            <?php endif; ?>
+
+
+                            <!-- PRECIO VENTA -->
+
+                            <div class="fs-5 fw-bold mb-3">
+
+                                S/
+                                <?= number_format(
+                                    (float)
+                                    $producto['precio_venta'],
+                                    2
+                                ) ?>
 
                             </div>
 
 
-                            <div class="text-danger fs-4">
+                            <button
+                                type="button"
+                                class="
+                                    btn
+                                    btn-warning
+                                    w-100
+                                    btn-agregar-carrito
+                                "
 
-                                <i class="fa-solid fa-wallet"></i>
+                                data-id="<?= (int) $producto['id'] ?>"
 
-                            </div>
+                                data-nombre="<?= htmlspecialchars(
+                                    $producto['nombre'],
+                                    ENT_QUOTES
+                                ) ?>"
+
+                                data-presentacion="<?= htmlspecialchars(
+                                    $producto['presentacion'] ?? '',
+                                    ENT_QUOTES
+                                ) ?>"
+
+                                data-precio="<?= number_format(
+                                    (float)
+                                    $producto['precio_venta'],
+                                    2,
+                                    '.',
+                                    ''
+                                ) ?>"
+
+                                <?= $agotado
+                                    ? 'disabled'
+                                    : '' ?>
+                            >
+
+                                <?php if ($agotado): ?>
+
+                                    Agotado
+
+                                <?php else: ?>
+
+                                    <i class="fa-solid fa-plus me-1"></i>
+                                    Agregar
+
+                                <?php endif; ?>
+
+                            </button>
 
                         </div>
 
@@ -410,91 +684,33 @@ require_once __DIR__ . '/includes/navbar.php';
 
                 </div>
 
-            </a>
+            </div>
 
-        </div>
+        <?php endforeach; ?>
 
     </div>
 
 
-    <!-- ======================================================
-         SEGUNDA FILA
-    ======================================================= -->
+    <!-- SIN RESULTADOS -->
 
-    <div class="row g-3">
+    <div
+        class="
+            text-center
+            text-muted
+            py-5
+            d-none
+        "
+        id="sinResultados"
+    >
 
-        <!-- ÚLTIMAS VENTAS -->
-        <div class="col-12 col-xl-7">
+        <i class="fa-solid fa-magnifying-glass fa-2x mb-3"></i>
 
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-header bg-white border-0 pt-3">
-
-                    <div class="d-flex justify-content-between align-items-center">
-
-                        <h5 class="fw-bold mb-0">
-                            Últimas ventas
-                        </h5>
-
-                        <a
-                            href="<?= BASE_URL ?>modules/ventas/index.php"
-                            class="btn btn-outline-secondary btn-sm"
-                        >
-                            Ver todas
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="list-group list-group-flush"
-                    id="dashboardUltimasVentas"
-                >
-
-                    <div class="text-center py-5">
-
-                        <div class="spinner-border"></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+        <div class="fw-semibold">
+            No encontramos productos
         </div>
 
-
-        <!-- PRODUCTOS MÁS VENDIDOS -->
-        <div class="col-12 col-xl-5">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-header bg-white border-0 pt-3">
-
-                    <h5 class="fw-bold mb-0">
-                        Más vendidos este mes
-                    </h5>
-
-                </div>
-
-
-                <div
-                    class="list-group list-group-flush"
-                    id="dashboardProductos"
-                >
-
-                    <div class="text-center py-5">
-
-                        <div class="spinner-border"></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+        <div class="small">
+            Prueba con otra búsqueda o categoría.
         </div>
 
     </div>
@@ -503,89 +719,111 @@ require_once __DIR__ . '/includes/navbar.php';
 
 
 
-
-
+<!-- =========================================================
+     CARRITO
+========================================================= -->
 
 <div
-    class="modal fade"
-    id="modalDeudoresDashboard"
+    class="offcanvas offcanvas-end"
     tabindex="-1"
-    aria-hidden="true"
+    id="carritoOffcanvas"
 >
 
-    <div
-        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
-    >
+    <div class="offcanvas-header">
 
-        <div class="modal-content">
+        <div>
 
-            <div class="modal-header">
+            <h5 class="offcanvas-title fw-bold">
+                Tu pedido
+            </h5>
 
-                <div>
+            <div class="small text-muted">
+                Don Pingüino
+            </div>
 
-                    <h5 class="modal-title fw-bold">
-                        Clientes con deuda
-                    </h5>
-
-                    <small class="text-muted">
-                        Ventas pendientes por cobrar
-                    </small>
-
-                </div>
+        </div>
 
 
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                ></button>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="offcanvas"
+        ></button>
+
+    </div>
+
+
+    <div class="offcanvas-body d-flex flex-column">
+
+        <div
+            class="flex-grow-1"
+            id="contenidoCarrito"
+        >
+        </div>
+
+
+        <div class="border-top pt-3 mt-3">
+
+            <div
+                class="
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-3
+                "
+            >
+
+                <span class="fw-semibold">
+                    Total
+                </span>
+
+
+                <span
+                    class="fs-4 fw-bold"
+                    id="totalCarrito"
+                >
+                    S/ 0.00
+                </span>
 
             </div>
 
 
-            <div class="modal-body">
+            <div class="mb-2">
 
-                <div class="card bg-light border-0 mb-3">
-
-                    <div class="card-body">
-
-                        <div class="small text-muted">
-                            Total pendiente
-                        </div>
-
-                        <div
-                            class="fs-3 fw-bold text-danger"
-                            id="modalDeudaTotal"
-                        >
-                            S/ 0.00
-                        </div>
-
-                    </div>
-
+                <div class="small text-muted text-center mb-2">
+                    ¿A qué número deseas enviar el pedido?
                 </div>
-
-
-                <div id="listaDeudoresDashboard"></div>
 
             </div>
 
 
-            <div class="modal-footer">
+            <div class="d-grid gap-2">
 
-                <a
-                    href="<?= BASE_URL ?>modules/clientes/index.php"
-                    class="btn btn-outline-secondary"
+                <button
+                    type="button"
+                    class="btn btn-success btn-lg btn-pedir-whatsapp"
+                    data-whatsapp="1"
+                    disabled
                 >
-                    Ver clientes
-                </a>
+
+                    <i class="fa-brands fa-whatsapp me-2"></i>
+
+                    Pedir por WhatsApp 1
+
+                </button>
 
 
                 <button
                     type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
+                    class="btn btn-outline-success btn-lg btn-pedir-whatsapp"
+                    data-whatsapp="2"
+                    disabled
                 >
-                    Cerrar
+
+                    <i class="fa-brands fa-whatsapp me-2"></i>
+
+                    Pedir por WhatsApp 2
+
                 </button>
 
             </div>
@@ -596,647 +834,60 @@ require_once __DIR__ . '/includes/navbar.php';
 
 </div>
 
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="bg-dark text-white py-4 mt-5">
+
+    <div class="container text-center">
+
+        <div class="fw-bold">
+            Don Pingüino
+        </div>
+
+        <div class="small text-white-50">
+            Catálogo virtual
+        </div>
+
+    </div>
+
+</footer>
+
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
 <script>
-document.addEventListener('DOMContentLoaded', function () {
 
-    const modalDeudoresDashboard =
-        new bootstrap.Modal(
-            document.getElementById(
-                'modalDeudoresDashboard'
-            )
-        );
+window.CATALOGO_CONFIG = {
 
+    whatsapp1:
+        '<?= htmlspecialchars(
+            WHATSAPP_PEDIDOS_1,
+            ENT_QUOTES
+        ) ?>',
 
-    let deudoresDashboard = [];
+    whatsapp2:
+        '<?= htmlspecialchars(
+            WHATSAPP_PEDIDOS_2,
+            ENT_QUOTES
+        ) ?>'
 
-    cargarDashboard();
+};
 
-
-    function cargarDashboard() {
-
-        $.ajax({
-
-            url:
-                '<?= BASE_URL ?>ajax/dashboard/resumen.php',
-
-            type:
-                'GET',
-
-            dataType:
-                'json',
-
-            success: function (response) {
-
-                if (!response.success) {
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
-
-                    return;
-                }
-
-
-                pintarDashboard(response);
-            },
-
-            error: function (xhr) {
-
-                console.error(
-                    xhr.responseText
-                );
-
-            }
-
-        });
-    }
-
-
-    function pintarDashboard(data) {
-
-        deudoresDashboard =
-            data.deudas.lista || [];
-
-        /* ====================================================
-           CARDS
-        ==================================================== */
-
-        $('#dashboardVentasHoy')
-            .text(
-                dinero(
-                    data.ventas_hoy.total
-                )
-            );
-
-
-        $('#dashboardVentasCantidad')
-            .text(
-                data.ventas_hoy.cantidad
-                +
-                (
-                    Number(
-                        data.ventas_hoy.cantidad
-                    ) === 1
-                        ? ' venta'
-                        : ' ventas'
-                )
-            );
-
-
-        $('#dashboardUtilidad')
-            .text(
-                dinero(
-                    data.utilidad_hoy
-                )
-            );
-
-
-        $('#dashboardDeuda')
-            .text(
-                dinero(
-                    data.deudas.total
-                )
-            );
-
-
-        $('#dashboardDeudores')
-            .text(
-                data.deudas.clientes
-                +
-                (
-                    Number(
-                        data.deudas.clientes
-                    ) === 1
-                        ? ' cliente'
-                        : ' clientes'
-                )
-            );
-
-
-        $('#dashboardStockBajo')
-            .text(
-                data.stock_bajo
-            );
-
-
-        $('#dashboardEnvases')
-            .text(
-                formatearCantidad(
-                    data.envases.cantidad
-                )
-            );
-
-
-        $('#dashboardCuentasEnvases')
-            .text(
-                data.envases.cuentas
-                +
-                (
-                    Number(
-                        data.envases.cuentas
-                    ) === 1
-                        ? ' cuenta'
-                        : ' cuentas'
-                )
-            );
-
-
-        $('#dashboardCompras')
-            .text(
-                dinero(
-                    data.compras_hoy.total
-                )
-            );
-
-
-        $('#dashboardComprasCantidad')
-            .text(
-                data.compras_hoy.cantidad
-                +
-                (
-                    Number(
-                        data.compras_hoy.cantidad
-                    ) === 1
-                        ? ' compra'
-                        : ' compras'
-                )
-            );
-
-
-        $('#dashboardRegalos')
-            .text(
-                dinero(
-                    data.regalos_mes.costo
-                )
-            );
-
-
-        $('#dashboardRegalosCantidad')
-            .text(
-                data.regalos_mes.cantidad
-                +
-                (
-                    Number(
-                        data.regalos_mes.cantidad
-                    ) === 1
-                        ? ' registro'
-                        : ' registros'
-                )
-            );
-
-            $('#dashboardGastosMes') .text(
-                dinero(
-                    data.gastos_mes.total
-                )
-            );
-
-
-            $('#dashboardGastosCantidad') .text(
-                data.gastos_mes.cantidad
-                +
-                (
-                    Number(
-                        data.gastos_mes.cantidad
-                    ) === 1
-                        ? ' gasto'
-                        : ' gastos'
-                )
-            );
-        
-        
-        $('#cardDeudas')
-            .off('click')
-            .on(
-                'click',
-                function () {
-
-                    pintarDeudoresDashboard();
-
-                    modalDeudoresDashboard.show();
-
-                }
-            );
-
-
-        pintarUltimasVentas(
-            data.ultimas_ventas
-        );
-
-
-        pintarProductos(
-            data.productos_mas_vendidos
-        );
-    }
-
-    // ========================================================
-    // DEUDORES
-    // ========================================================
-
-    function pintarDeudoresDashboard() {
-
-            const $lista =
-                $('#listaDeudoresDashboard');
-
-
-            $lista.empty();
-
-
-            $('#modalDeudaTotal')
-                .text(
-                    dinero(
-                        deudoresDashboard.reduce(
-                            function (total, cliente) {
-
-                                return (
-                                    total
-                                    +
-                                    Number(
-                                        cliente.deuda_total
-                                        || 0
-                                    )
-                                );
-                            },
-                            0
-                        )
-                    )
-                );
-
-
-            if (
-                deudoresDashboard.length
-                === 0
-            ) {
-
-                $lista.html(`
-
-                    <div class="text-center text-success py-5">
-
-                        <i class="fa-solid fa-circle-check fa-2x mb-2"></i>
-
-                        <div class="fw-semibold">
-                            No hay clientes con deuda.
-                        </div>
-
-                    </div>
-
-                `);
-
-                return;
-            }
-
-
-            deudoresDashboard.forEach(
-                function (cliente) {
-
-                    $lista.append(`
-
-                        <div class="border rounded p-3 mb-2">
-
-                            <div
-                                class="d-flex flex-column flex-sm-row
-                                    justify-content-between
-                                    align-items-sm-center
-                                    gap-3"
-                            >
-
-                                <div>
-
-                                    <div class="fw-semibold">
-                                        ${escapeHtml(cliente.nombre)}
-                                    </div>
-
-                                    <small class="text-muted">
-
-                                        ${cliente.ventas_pendientes}
-
-                                        ${
-                                            Number(
-                                                cliente.ventas_pendientes
-                                            ) === 1
-                                                ? 'venta pendiente'
-                                                : 'ventas pendientes'
-                                        }
-
-                                    </small>
-
-                                </div>
-
-
-                                <div class="text-sm-end">
-
-                                    <div class="small text-muted">
-                                        Debe
-                                    </div>
-
-                                    <div class="fs-5 fw-bold text-danger mb-2">
-
-                                        ${dinero(cliente.deuda_total)}
-
-                                    </div>
-
-
-                                    <a
-                                        href="<?= BASE_URL ?>modules/clientes/index.php?deudas_cliente=${cliente.cliente_id}"
-                                        class="btn btn-outline-danger btn-sm"
-                                    >
-                                        <i class="fa-solid fa-eye me-1"></i>
-                                        Ver deudas
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    `);
-
-                }
-            );
-        }
-
-
-
-    // ========================================================
-    // ÚLTIMAS VENTAS
-    // ========================================================
-
-    function pintarUltimasVentas(ventas) {
-
-        const $lista =
-            $('#dashboardUltimasVentas');
-
-
-        $lista.empty();
-
-
-        if (
-            !ventas
-            ||
-            ventas.length === 0
-        ) {
-
-            $lista.html(`
-
-                <div class="text-center text-muted py-5">
-
-                    <i class="fa-solid fa-receipt fa-2x mb-2"></i>
-
-                    <div>
-                        Todavía no hay ventas.
-                    </div>
-
-                </div>
-
-            `);
-
-            return;
-        }
-
-
-        ventas.forEach(
-            function (venta) {
-
-                let badge = '';
-
-
-                switch (
-                    venta.estado_pago
-                ) {
-
-                    case 'PAGADO':
-
-                        badge = `
-
-                            <span class="badge text-bg-success">
-                                Pagado
-                            </span>
-
-                        `;
-
-                        break;
-
-
-                    case 'PARCIAL':
-
-                        badge = `
-
-                            <span class="badge text-bg-warning">
-                                Parcial
-                            </span>
-
-                        `;
-
-                        break;
-
-
-                    default:
-
-                        badge = `
-
-                            <span class="badge text-bg-danger">
-                                Pendiente
-                            </span>
-
-                        `;
-                }
-
-
-                $lista.append(`
-
-                    <a
-                        href="<?= BASE_URL ?>modules/ventas/index.php"
-                        class="list-group-item list-group-item-action py-3"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center gap-3">
-
-                            <div>
-
-                                <div class="fw-semibold">
-
-                                    #${venta.id}
-                                    ·
-                                    ${escapeHtml(venta.cliente)}
-
-                                </div>
-
-                                <small class="text-muted">
-                                    ${escapeHtml(venta.fecha_formateada)}
-                                </small>
-
-                            </div>
-
-
-                            <div class="text-end">
-
-                                <div class="fw-bold">
-                                    ${dinero(venta.total)}
-                                </div>
-
-                                ${badge}
-
-                            </div>
-
-                        </div>
-
-                    </a>
-
-                `);
-
-            }
-        );
-    }
-
-
-    // ========================================================
-    // MÁS VENDIDOS
-    // ========================================================
-
-    function pintarProductos(productos) {
-
-        const $lista =
-            $('#dashboardProductos');
-
-
-        $lista.empty();
-
-
-        if (
-            !productos
-            ||
-            productos.length === 0
-        ) {
-
-            $lista.html(`
-
-                <div class="text-center text-muted py-5">
-
-                    <i class="fa-solid fa-chart-bar fa-2x mb-2"></i>
-
-                    <div>
-                        Sin datos este mes.
-                    </div>
-
-                </div>
-
-            `);
-
-            return;
-        }
-
-
-        productos.forEach(
-            function (producto, index) {
-
-                $lista.append(`
-
-                    <div class="list-group-item py-3">
-
-                        <div class="d-flex justify-content-between align-items-center gap-3">
-
-                            <div class="d-flex align-items-center gap-3">
-
-                                <span
-                                    class="badge rounded-pill text-bg-dark"
-                                >
-                                    ${index + 1}
-                                </span>
-
-
-                                <div>
-
-                                    <div class="fw-semibold">
-                                        ${escapeHtml(producto.nombre)}
-                                    </div>
-
-                                    <small class="text-muted">
-
-                                        ${formatearCantidad(producto.cantidad)}
-                                        vendidos
-
-                                    </small>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="text-end">
-
-                                <small class="text-muted">
-                                    Ventas
-                                </small>
-
-                                <div class="fw-semibold">
-                                    ${dinero(producto.total_vendido)}
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                `);
-
-            }
-        );
-    }
-
-
-    function dinero(valor) {
-
-        return (
-            'S/ '
-            +
-            Number(
-                valor || 0
-            ).toFixed(2)
-        );
-    }
-
-
-    function formatearCantidad(valor) {
-
-        const numero =
-            Number(
-                valor || 0
-            );
-
-
-        if (
-            Number.isInteger(numero)
-        ) {
-            return numero.toString();
-        }
-
-
-        return numero
-            .toFixed(3)
-            .replace(
-                /0+$/,
-                ''
-            )
-            .replace(
-                /\.$/,
-                ''
-            );
-    }
-
-
-    function escapeHtml(text) {
-
-        return $('<div>')
-            .text(text ?? '')
-            .html();
-    }
-
-});
 </script>
 
-<?php
-require_once __DIR__ . '/includes/footer.php';
-?>
+
+<script
+    src="<?= CATALOGO_BASE_URL ?>assets/js/catalogo.js"
+></script>
+
+
+</body>
+</html>

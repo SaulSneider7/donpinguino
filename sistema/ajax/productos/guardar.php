@@ -2,7 +2,9 @@
 
 session_start();
 
-header('Content-Type: application/json; charset=utf-8');
+header(
+    'Content-Type: application/json; charset=utf-8'
+);
 
 require_once __DIR__ . '/../../config/database.php';
 
@@ -28,6 +30,10 @@ function responder(
 }
 
 
+/* ============================================================
+   SESIÓN
+============================================================ */
+
 if (!isset($_SESSION['usuario_id'])) {
 
     http_response_code(401);
@@ -39,13 +45,22 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 
+/* ============================================================
+   DATOS
+============================================================ */
+
 $id =
-    isset($_POST['id']) && $_POST['id'] !== ''
+    isset($_POST['id'])
+    && $_POST['id'] !== ''
         ? (int) $_POST['id']
         : null;
 
 
-$nombre = trim($_POST['nombre'] ?? '');
+$nombre =
+    trim(
+        $_POST['nombre']
+        ?? ''
+    );
 
 
 $categoriaId =
@@ -56,27 +71,43 @@ $categoriaId =
 
 
 $descripcion =
-    trim($_POST['descripcion'] ?? '');
+    trim(
+        $_POST['descripcion']
+        ?? ''
+    );
 
 
 $presentacion =
-    trim($_POST['presentacion'] ?? '');
+    trim(
+        $_POST['presentacion']
+        ?? ''
+    );
 
 
 $tipoProducto =
-    $_POST['tipo_producto'] ?? 'SIMPLE';
+    $_POST['tipo_producto']
+    ?? 'SIMPLE';
 
 
 $costoReferencia =
-    (float) ($_POST['costo_referencia'] ?? 0);
+    (float) (
+        $_POST['costo_referencia']
+        ?? 0
+    );
 
 
 $precioRegular =
-    (float) ($_POST['precio_regular'] ?? 0);
+    (float) (
+        $_POST['precio_regular']
+        ?? 0
+    );
 
 
 $precioVenta =
-    (float) ($_POST['precio_venta'] ?? 0);
+    (float) (
+        $_POST['precio_venta']
+        ?? 0
+    );
 
 
 $manejaStock =
@@ -85,12 +116,11 @@ $manejaStock =
         : 0;
 
 
-$stockActual =
-    (float) ($_POST['stock_actual'] ?? 0);
-
-
 $stockMinimo =
-    (float) ($_POST['stock_minimo'] ?? 0);
+    (float) (
+        $_POST['stock_minimo']
+        ?? 0
+    );
 
 
 $controlaEnvase =
@@ -107,11 +137,29 @@ $tipoEnvaseId =
 
 
 $envasesPorUnidad =
-    (float) ($_POST['envases_por_unidad'] ?? 0);
+    (float) (
+        $_POST['envases_por_unidad']
+        ?? 0
+    );
 
 
+/*
+ * Esta ruta corresponde a la imagen que YA existe.
+ *
+ * Si el usuario selecciona una imagen nueva,
+ * subir_imagen.php será el encargado de reemplazarla.
+ */
 $imagenUrl =
-    trim($_POST['imagen_url'] ?? '');
+    trim(
+        $_POST['imagen_url']
+        ?? ''
+    );
+
+
+if ($imagenUrl === '') {
+
+    $imagenUrl = null;
+}
 
 
 $publicarCatalogo =
@@ -142,7 +190,10 @@ if ($nombre === '') {
 if (
     !in_array(
         $tipoProducto,
-        ['SIMPLE', 'COMBO'],
+        [
+            'SIMPLE',
+            'COMBO'
+        ],
         true
     )
 ) {
@@ -156,8 +207,10 @@ if (
 
 if (
     $costoReferencia < 0
-    || $precioRegular < 0
-    || $precioVenta < 0
+    ||
+    $precioRegular < 0
+    ||
+    $precioVenta < 0
 ) {
 
     responder(
@@ -167,43 +220,48 @@ if (
 }
 
 
-if (
-    $stockActual < 0
-    || $stockMinimo < 0
-) {
+if ($stockMinimo < 0) {
 
     responder(
         false,
-        'El stock no puede ser negativo.'
+        'El stock mínimo no puede ser negativo.'
     );
 }
 
 
+/* ============================================================
+   COMBOS
+============================================================ */
+
 /*
- * Los combos no manejan stock propio.
- * El stock posteriormente dependerá de sus componentes.
+ * Los combos no tienen stock propio.
+ *
+ * Su disponibilidad depende del stock
+ * de sus componentes.
  */
+
 if ($tipoProducto === 'COMBO') {
 
     $manejaStock = 0;
-    $stockActual = 0;
+
     $stockMinimo = 0;
 }
 
 
 if (!$manejaStock) {
 
-    $stockActual = 0;
     $stockMinimo = 0;
 }
 
 
-/*
- * Si no controla envases, limpiamos esos valores.
- */
+/* ============================================================
+   ENVASES
+============================================================ */
+
 if (!$controlaEnvase) {
 
     $tipoEnvaseId = null;
+
     $envasesPorUnidad = 0;
 
 } else {
@@ -232,6 +290,18 @@ if (!$controlaEnvase) {
 ============================================================ */
 
 if ($id === null) {
+
+    /*
+     * Un producto nuevo siempre empieza con stock 0.
+     *
+     * El inventario real se registra después mediante:
+     *
+     * Compras
+     * Ajustes de inventario
+     */
+
+    $stockInicial = 0;
+
 
     $sql = "
         INSERT INTO productos (
@@ -263,18 +333,28 @@ if ($id === null) {
         )
         VALUES (
             ?, ?,
+
             ?, ?, ?, ?,
+
             ?, ?, ?,
+
             ?, ?, ?,
+
             ?, ?,
+
             ?,
+
             ?, ?,
+
             1
         )
     ";
 
 
-    $stmt = $conn->prepare($sql);
+    $stmt =
+        $conn->prepare(
+            $sql
+        );
 
 
     if (!$stmt) {
@@ -286,34 +366,6 @@ if ($id === null) {
         );
     }
 
-
-    /*
-     * 17 parámetros:
-     *
-     * i categoriaId
-     * i tipoEnvaseId
-     *
-     * s nombre
-     * s descripcion
-     * s presentacion
-     * s tipoProducto
-     *
-     * d costoReferencia
-     * d precioRegular
-     * d precioVenta
-     *
-     * i manejaStock
-     * d stockActual
-     * d stockMinimo
-     *
-     * i controlaEnvase
-     * d envasesPorUnidad
-     *
-     * s imagenUrl
-     *
-     * i publicarCatalogo
-     * i destacadoCatalogo
-     */
 
     $stmt->bind_param(
         'iissssdddiddidsii',
@@ -331,7 +383,7 @@ if ($id === null) {
         $precioVenta,
 
         $manejaStock,
-        $stockActual,
+        $stockInicial,
         $stockMinimo,
 
         $controlaEnvase,
@@ -354,12 +406,60 @@ if ($id === null) {
     }
 
 
+    $productoId =
+        (int)
+        $stmt->insert_id;
+
+
     responder(
         true,
         'Producto registrado correctamente.',
         [
-            'id' => $stmt->insert_id
+            'id' =>
+                $productoId
         ]
+    );
+}
+
+
+/* ============================================================
+   VERIFICAR QUE EL PRODUCTO EXISTA
+============================================================ */
+
+$stmtExiste =
+    $conn->prepare(
+        "
+            SELECT id
+
+            FROM productos
+
+            WHERE id = ?
+
+            LIMIT 1
+        "
+    );
+
+
+$stmtExiste->bind_param(
+    'i',
+    $id
+);
+
+
+$stmtExiste->execute();
+
+
+$productoExiste =
+    $stmtExiste
+        ->get_result()
+        ->fetch_assoc();
+
+
+if (!$productoExiste) {
+
+    responder(
+        false,
+        'Producto no encontrado.'
     );
 }
 
@@ -368,8 +468,26 @@ if ($id === null) {
    EDITAR PRODUCTO
 ============================================================ */
 
+/*
+ * IMPORTANTE:
+ *
+ * NO actualizamos stock_actual.
+ *
+ * El stock actual debe conservarse exactamente como está.
+ * Solo puede cambiar mediante:
+ *
+ * - compras
+ * - ventas
+ * - regalos
+ * - ajustes
+ *
+ * Esto evita modificaciones accidentales del inventario
+ * desde el mantenimiento de productos.
+ */
+
 $sql = "
     UPDATE productos
+
     SET
         categoria_id = ?,
         tipo_envase_id = ?,
@@ -384,7 +502,6 @@ $sql = "
         precio_venta = ?,
 
         maneja_stock = ?,
-        stock_actual = ?,
         stock_minimo = ?,
 
         controla_envase = ?,
@@ -401,7 +518,10 @@ $sql = "
 ";
 
 
-$stmt = $conn->prepare($sql);
+$stmt =
+    $conn->prepare(
+        $sql
+    );
 
 
 if (!$stmt) {
@@ -415,11 +535,36 @@ if (!$stmt) {
 
 
 /*
- * Los mismos 17 parámetros anteriores
- * + id al final = 18.
+ * 17 parámetros:
+ *
+ * i categoria
+ * i tipo envase
+ *
+ * s nombre
+ * s descripción
+ * s presentación
+ * s tipo producto
+ *
+ * d costo
+ * d precio regular
+ * d precio venta
+ *
+ * i maneja stock
+ * d stock mínimo
+ *
+ * i controla envase
+ * d envases por unidad
+ *
+ * s imagen
+ *
+ * i publicar
+ * i destacado
+ *
+ * i producto ID
  */
+
 $stmt->bind_param(
-    'iissssdddiddidsiii',
+    'iissssdddididsiii',
 
     $categoriaId,
     $tipoEnvaseId,
@@ -434,7 +579,6 @@ $stmt->bind_param(
     $precioVenta,
 
     $manejaStock,
-    $stockActual,
     $stockMinimo,
 
     $controlaEnvase,
@@ -459,7 +603,15 @@ if (!$stmt->execute()) {
 }
 
 
+/* ============================================================
+   RESPUESTA
+============================================================ */
+
 responder(
     true,
-    'Producto actualizado correctamente.'
+    'Producto actualizado correctamente.',
+    [
+        'id' =>
+            $id
+    ]
 );
