@@ -1525,3 +1525,9 @@ CREATE TABLE gastos (
     INDEX idx_gastos_tipo (tipo),
     INDEX idx_gastos_activo_fecha (activo, fecha)
 );
+
+
+
+ALTER TABLE clientes
+ADD COLUMN fecha_nacimiento DATE NULL
+AFTER telefono;

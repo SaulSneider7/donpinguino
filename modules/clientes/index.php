@@ -57,6 +57,7 @@ $clienteDeudaInicial =
                         <th>ID</th>
                         <th>Cliente</th>
                         <th>Teléfono</th>
+                        <th>Nacimiento</th>
                         <th>Dirección</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -181,7 +182,28 @@ $clienteDeudaInicial =
                     </div>
 
 
-                    <div class="mb-0">
+                    <div class="mb-3">
+
+                        <label
+                            for="fecha_nacimiento"
+                            class="form-label"
+                        >
+                            Fecha de nacimiento
+                            <span class="text-muted fw-normal">
+                                (opcional)
+                            </span>
+                        </label>
+
+                        <input
+                            type="date"
+                            class="form-control"
+                            name="fecha_nacimiento"
+                            id="fecha_nacimiento"
+                        >
+
+                    </div>
+
+                    <div class="mb-0" hidden>
 
                         <label class="form-label">
                             Observación
@@ -545,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function () {
             { data: 'id' },
             { data: 'cliente' },
             { data: 'telefono' },
+            { data: 'fecha_nacimiento' },
             { data: 'direccion' },
             { data: 'estado' },
             {
@@ -1198,6 +1221,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     $('#direccion').val(
                         c.direccion ?? ''
+                    );
+
+                    $('#fecha_nacimiento') .val(
+                        c.fecha_nacimiento || ''
                     );
 
                     $('#observacion').val(

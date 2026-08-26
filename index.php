@@ -354,6 +354,66 @@ require_once __DIR__ . '/includes/navbar.php';
 
         </div>
 
+
+        <!-- GASTOS -->
+        <div class="col-12 col-sm-6 col-xl-3">
+
+            <a
+                href="<?= BASE_URL ?>modules/gastos/index.php"
+                class="text-decoration-none text-reset"
+            >
+
+                <div class="card border-0 shadow-sm h-100">
+
+                    <div class="card-body">
+
+                        <div
+                            class="
+                                d-flex
+                                justify-content-between
+                                align-items-start
+                            "
+                        >
+
+                            <div>
+
+                                <div class="small text-muted">
+                                    Gastos este mes
+                                </div>
+
+                                <div
+                                    class="fs-4 fw-bold text-danger mt-1"
+                                    id="dashboardGastosMes"
+                                >
+                                    S/ 0.00
+                                </div>
+
+                                <small
+                                    class="text-muted"
+                                    id="dashboardGastosCantidad"
+                                >
+                                    0 gastos
+                                </small>
+
+                            </div>
+
+
+                            <div class="text-danger fs-4">
+
+                                <i class="fa-solid fa-wallet"></i>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
     </div>
 
 
@@ -725,16 +785,39 @@ document.addEventListener('DOMContentLoaded', function () {
                         : ' registros'
                 )
             );
+
+            $('#dashboardGastosMes') .text(
+                dinero(
+                    data.gastos_mes.total
+                )
+            );
+
+
+            $('#dashboardGastosCantidad') .text(
+                data.gastos_mes.cantidad
+                +
+                (
+                    Number(
+                        data.gastos_mes.cantidad
+                    ) === 1
+                        ? ' gasto'
+                        : ' gastos'
+                )
+            );
         
-        $('#cardDeudas').on(
-            'click',
-            function () {
+        
+        $('#cardDeudas')
+            .off('click')
+            .on(
+                'click',
+                function () {
 
-                pintarDeudoresDashboard();
+                    pintarDeudoresDashboard();
 
-                modalDeudoresDashboard.show();
-            }
-        );
+                    modalDeudoresDashboard.show();
+
+                }
+            );
 
 
         pintarUltimasVentas(

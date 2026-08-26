@@ -238,6 +238,241 @@ $anioActual = (int) date('Y');
     </div>
 
 
+    <!-- =====================================================
+         GRÁFICO SEMANAL
+    ====================================================== -->
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-header bg-white border-0 pt-4 px-4">
+
+            <div
+                class="
+                    d-flex
+                    flex-column
+                    flex-lg-row
+                    justify-content-between
+                    gap-3
+                "
+            >
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Análisis por período
+                    </h5>
+
+                    <p class="text-muted small mb-0">
+                        Analiza ventas, productos y clientes en un período específico.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <!-- FILTROS -->
+
+            <div class="row g-3 mb-4">
+
+                <!-- PERIODO -->
+
+                <div class="col-12 col-md-6 col-xl-3">
+
+                    <label class="form-label small text-muted">
+                        Período
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="filtroPeriodoGrafico"
+                    >
+
+                        <option value="HOY">
+                            Hoy
+                        </option>
+
+                        <option value="AYER">
+                            Ayer
+                        </option>
+
+                        <option value="SEMANA" selected>
+                            Esta semana
+                        </option>
+
+                        <option value="MES">
+                            Este mes
+                        </option>
+
+                        <option value="ANIO">
+                            Este año
+                        </option>
+
+                        <option value="PERSONALIZADO">
+                            Personalizado
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- PRODUCTO -->
+
+                <div class="col-12 col-md-6 col-xl-3">
+
+                    <label class="form-label small text-muted">
+                        Producto
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="filtroProductoPeriodo"
+                    >
+                    </select>
+
+                </div>
+
+
+                <!-- CLIENTE -->
+
+                <div class="col-12 col-md-6 col-xl-3">
+
+                    <label class="form-label small text-muted">
+                        Cliente
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="filtroClientePeriodo"
+                    >
+                    </select>
+
+                </div>
+
+
+                <!-- MÉTRICA -->
+
+                <div class="col-12 col-md-6 col-xl-3">
+
+                    <label class="form-label small text-muted">
+                        Ver
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="filtroMetricaPeriodo"
+                    >
+
+                        <option value="VENTAS">
+                            Ventas
+                        </option>
+
+                        <option value="UTILIDAD">
+                            Utilidad bruta
+                        </option>
+
+                        <option value="UNIDADES">
+                            Unidades vendidas
+                        </option>
+
+                        <option value="CANTIDAD_VENTAS">
+                            Número de ventas
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- FECHAS PERSONALIZADAS -->
+
+            <div
+                class="row g-3 mb-4 d-none"
+                id="contenedorFechasPeriodo"
+            >
+
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label small text-muted">
+                        Desde
+                    </label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        id="fechaDesdePeriodo"
+                    >
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <label class="form-label small text-muted">
+                        Hasta
+                    </label>
+
+                    <input
+                        type="date"
+                        class="form-control"
+                        id="fechaHastaPeriodo"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- TÍTULO DINÁMICO -->
+
+            <div class="mb-3">
+
+                <h6
+                    class="fw-bold mb-1"
+                    id="tituloGraficoPeriodo"
+                >
+                    Ventas de esta semana
+                </h6>
+
+                <div
+                    class="text-muted small"
+                    id="descripcionGraficoPeriodo"
+                >
+                    Evolución diaria durante la semana actual.
+                </div>
+
+            </div>
+
+
+            <!-- GRÁFICO -->
+
+            <div
+                class="position-relative"
+                style="height: 420px;"
+            >
+
+                <canvas id="graficoPeriodo"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>    
+
+
+
+
+
+
+
+
     <!-- =========================================================
         FILTRO DEL MES
     ========================================================= -->
@@ -502,102 +737,72 @@ $anioActual = (int) date('Y');
 
 <script>
 
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
+document.addEventListener( 'DOMContentLoaded', function () {
+    let graficoMensual = null;
+    let graficoGastos = null;
+    let graficoProductos = null;
+    let graficoCliente = null;
+    let graficoPeriodo = null;
 
-        let graficoMensual = null;
+    $('#filtroClienteGrafico').on(
+        'change',
+        function () {
+            cargarGraficoClientes();
+        }
+    );
 
-        let graficoGastos = null;
+    $('#filtroMesDetalle') .val(
+        <?= (int) date('n') ?>
+    );
 
-        let graficoProductos = null;
-
-        let graficoCliente = null;
-
-        $('#filtroClienteGrafico').on(
-            'change',
-            function () {
-
-                cargarGraficoClientes();
-
-            }
-        );
-
-
-        $('#filtroMesDetalle')
-            .val(
-                <?= (int) date('n') ?>
-            );
-
-        $('#filtroMesDetalle').on(
-            'change',
-            function () {
-
-                cargarGraficoGastos();
-
-                cargarGraficoProductos();
-
-            }
-        );
+    $('#filtroMesDetalle').on(
+        'change',
+        function () {
+            cargarGraficoGastos();
+            cargarGraficoProductos();
+        }
+    );
 
 
 
-        $('#filtroClienteGrafico')
-            .select2({
-
-                theme:
-                    'bootstrap-5',
-
-                width:
-                    '100%',
-
-                placeholder:
-                    'Top 5 clientes',
-
-                allowClear:
-                    true,
-
-                minimumInputLength:
-                    0,
-
-                ajax: {
-
-                    url:
-                        '<?= BASE_URL ?>ajax/clientes/buscar.php',
-
-                    dataType:
-                        'json',
-
-                    delay:
-                        250,
-
-                    data:
-                        function (params) {
-
-                            return {
-                                q:
-                                    params.term
-                                    || ''
-                            };
-
-                        },
-
-                    processResults:
-                        function (data) {
-
-                            return data;
-
-                        }
-
+    $('#filtroClienteGrafico') .select2({
+            theme:
+                'bootstrap-5',
+            width:
+                '100%',
+            placeholder:
+                'Top 5 clientes',
+            allowClear:
+                true,
+            minimumInputLength:
+                0,
+            ajax: {
+                url:
+                    '<?= BASE_URL ?>ajax/clientes/buscar.php',
+                dataType:
+                    'json',
+                delay:
+                    250,
+                data:
+                    function (params) {
+                        return {
+                            q:
+                                params.term
+                                || ''
+                        };
+                    },
+                processResults:
+                    function (data) {
+                        return data;
+                    }
                 }
-
-            });
+    });
         
-        // ====================================================
-        // GRAFICO DE CLIENTE
-        // ====================================================    
+    // ====================================================
+    // GRAFICO DE CLIENTE
+    // ====================================================    
 
-        function cargarGraficoCliente(clienteId) {
+    function cargarGraficoCliente(clienteId) {
 
             $.ajax({
 
@@ -646,9 +851,9 @@ document.addEventListener(
 
             });
 
-        }
+    }
 
-        function cargarGraficoClientes() {
+    function cargarGraficoClientes() {
 
             const clienteId =
                 Number(
@@ -671,11 +876,11 @@ document.addEventListener(
 
             }
 
-        }
+    }
 
 
 
-        function cargarTopClientes() {
+    function cargarTopClientes() {
 
             $.ajax({
 
@@ -734,10 +939,10 @@ document.addEventListener(
 
             });
 
-        }
+    }
 
 
-        function pintarTopClientes(data) {
+    function pintarTopClientes(data) {
 
             const canvas =
                 document.getElementById(
@@ -905,10 +1110,10 @@ document.addEventListener(
 
                     }
                 );
-        }
+    }
 
 
-        function cargarGraficoClienteIndividual(clienteId) {
+    function cargarGraficoClienteIndividual(clienteId) {
 
             $.ajax({
 
@@ -975,11 +1180,11 @@ document.addEventListener(
 
             });
 
-        }
+    }
 
 
 
-        function pintarClienteMensual( response ) {
+    function pintarClienteMensual( response ) {
 
             const canvas =
                 document.getElementById(
@@ -1156,12 +1361,10 @@ document.addEventListener(
 
                     }
                 );
-        }
+    }
 
 
-        function pintarGraficoCliente(
-            response
-        ) {
+    function pintarGraficoCliente( response ) {
 
             const canvas =
                 document.getElementById(
@@ -1335,48 +1538,73 @@ document.addEventListener(
                     }
                 );
 
-        }
+    }
 
 
+    // ====================================================
+    // PINTAR GRAFICO PERIODO
+    // ====================================================
+    function cargarGraficoPeriodo() {
 
-        // ====================================================
-        // FORMATO MONEDA
-        // ====================================================
-
-        function moneda(valor) {
-
-            return new Intl.NumberFormat(
-                'es-PE',
-                {
-                    style:
-                        'currency',
-
-                    currency:
-                        'PEN',
-
-                    minimumFractionDigits:
-                        2
-                }
-            ).format(
-                Number(valor || 0)
-            );
-        }
+            const periodo =
+                $('#filtroPeriodoGrafico')
+                    .val();
 
 
-        // ====================================================
-        // CARGAR GRÁFICO
-        // ====================================================
+            const productoId =
+                Number(
+                    $('#filtroProductoPeriodo')
+                        .val()
+                    || 0
+                );
 
-        function cargarGraficoMensual() {
 
-            const anio =
-                $('#filtroAnio').val();
+            const clienteId =
+                Number(
+                    $('#filtroClientePeriodo')
+                        .val()
+                    || 0
+                );
+
+
+            const metrica =
+                $('#filtroMetricaPeriodo')
+                    .val();
+
+
+            const desde =
+                $('#fechaDesdePeriodo')
+                    .val();
+
+
+            const hasta =
+                $('#fechaHastaPeriodo')
+                    .val();
+
+
+            /*
+            * Si es personalizado esperamos a que existan
+            * ambas fechas.
+            */
+
+            if (
+                periodo === 'PERSONALIZADO'
+                &&
+                (
+                    !desde
+                    ||
+                    !hasta
+                )
+            ) {
+
+                return;
+            }
 
 
             $.ajax({
 
                 url:
-                    '<?= BASE_URL ?>ajax/reportes/graficos_mensuales.php',
+                    '<?= BASE_URL ?>ajax/reportes/grafico_periodo.php',
 
                 type:
                     'GET',
@@ -1385,18 +1613,39 @@ document.addEventListener(
                     'json',
 
                 data: {
-                    anio: anio
+
+                    periodo:
+                        periodo,
+
+                    producto_id:
+                        productoId,
+
+                    cliente_id:
+                        clienteId,
+
+                    metrica:
+                        metrica,
+
+                    desde:
+                        desde,
+
+                    hasta:
+                        hasta
+
                 },
 
 
                 success:
-                    function (response) {
+                    function (
+                        response
+                    ) {
 
                         if (
                             !response.success
                         ) {
 
                             Swal.fire({
+
                                 icon:
                                     'error',
 
@@ -1405,26 +1654,29 @@ document.addEventListener(
 
                                 text:
                                     response.message
+
                             });
 
                             return;
                         }
 
 
-                        pintarResumen(
-                            response.resumen
+                        actualizarTituloGraficoPeriodo(
+                            response
                         );
 
 
-                        pintarGrafico(
-                            response.data
+                        pintarGraficoPeriodo(
+                            response
                         );
 
                     },
 
 
                 error:
-                    function (xhr) {
+                    function (
+                        xhr
+                    ) {
 
                         console.error(
                             xhr.responseText
@@ -1432,6 +1684,7 @@ document.addEventListener(
 
 
                         Swal.fire({
+
                             icon:
                                 'error',
 
@@ -1439,136 +1692,144 @@ document.addEventListener(
                                 'Error',
 
                             text:
-                                'No se pudo cargar la información de los gráficos.'
+                                'No se pudo cargar el análisis.'
+
                         });
 
                     }
 
             });
 
-        }
+    }
 
 
-        // ====================================================
-        // RESUMEN
-        // ====================================================
+    function actualizarTituloGraficoPeriodo( response ) {
 
-        function pintarResumen(resumen) {
-
-            $('#totalVentasAnio')
-                .text(
-                    moneda(
-                        resumen.ventas
-                    )
-                );
-
-
-            $('#totalUtilidadAnio')
-                .text(
-                    moneda(
-                        resumen.utilidad_bruta
-                    )
-                );
-
-
-            $('#totalGananciaAnio')
-                .text(
-                    moneda(
-                        resumen.ganancia
-                    )
-                );
+            let titulo =
+                response.metrica_nombre;
 
 
             /*
-             * Si la ganancia es negativa,
-             * la mostramos en rojo.
-             */
+            * Nombre del producto seleccionado.
+            */
 
-            const ganancia =
-                Number(
-                    resumen.ganancia
-                    || 0
-                );
-
-
-            $('#totalGananciaAnio')
-                .removeClass(
-                    'text-success text-danger'
-                )
-                .addClass(
-                    ganancia >= 0
-                        ? 'text-success'
-                        : 'text-danger'
-                );
-
-        }
-
-
-        // ====================================================
-        // PINTAR CHART
-        // ====================================================
-
-        function pintarGrafico(data) {
-
-            const contexto =
-                document
-                    .getElementById(
-                        'graficoMensual'
+            const productoTexto =
+                $('#filtroProductoPeriodo')
+                    .find(
+                        ':selected'
                     )
-                    .getContext('2d');
+                    .text()
+                    .trim();
 
 
             /*
-             * Si ya existe un gráfico,
-             * lo destruimos antes de generar
-             * el nuevo.
-             */
+            * Nombre cliente.
+            */
+
+            const clienteTexto =
+                $('#filtroClientePeriodo')
+                    .find(
+                        ':selected'
+                    )
+                    .text()
+                    .trim();
+
 
             if (
-                graficoMensual
+                Number(
+                    response.producto_id
+                ) > 0
+                &&
+                productoTexto
             ) {
 
-                graficoMensual.destroy();
+                titulo +=
+                    ' - '
+                    +
+                    productoTexto;
+            }
+
+
+            if (
+                Number(
+                    response.cliente_id
+                ) > 0
+                &&
+                clienteTexto
+            ) {
+
+                titulo +=
+                    ' - '
+                    +
+                    clienteTexto;
+            }
+
+
+            $('#tituloGraficoPeriodo')
+                .text(
+                    titulo
+                );
+
+
+            let descripcion =
+                response.periodo_nombre;
+
+
+            descripcion +=
+                ' · '
+                +
+                response.desde
+                +
+                ' al '
+                +
+                response.hasta;
+
+
+            $('#descripcionGraficoPeriodo')
+                .text(
+                    descripcion
+                );
+
+    }
+        
+
+    function pintarGraficoPeriodo( response ) {
+
+            const canvas =
+                document.getElementById(
+                    'graficoPeriodo'
+                );
+
+
+            if (
+                graficoPeriodo
+            ) {
+
+                graficoPeriodo.destroy();
+
+                graficoPeriodo = null;
             }
 
 
             const labels =
-                data.map(
+                response.data.map(
                     fila =>
-                        fila.mes_nombre
+                        fila.label
                 );
 
 
-            const ventas =
-                data.map(
+            const valores =
+                response.data.map(
                     fila =>
                         Number(
-                            fila.ventas
+                            fila.valor
                         )
                 );
 
 
-            const utilidad =
-                data.map(
-                    fila =>
-                        Number(
-                            fila.utilidad_bruta
-                        )
-                );
-
-
-            const ganancia =
-                data.map(
-                    fila =>
-                        Number(
-                            fila.ganancia
-                        )
-                );
-
-
-            graficoMensual =
+            graficoPeriodo =
                 new Chart(
-                    contexto,
+                    canvas,
                     {
 
                         type:
@@ -1584,11 +1845,12 @@ document.addEventListener(
                             datasets: [
 
                                 {
+
                                     label:
-                                        'Ventas',
+                                        response.metrica_nombre,
 
                                     data:
-                                        ventas,
+                                        valores,
 
                                     tension:
                                         0.3,
@@ -1601,48 +1863,7 @@ document.addEventListener(
 
                                     pointHoverRadius:
                                         6
-                                },
 
-
-                                {
-                                    label:
-                                        'Utilidad bruta',
-
-                                    data:
-                                        utilidad,
-
-                                    tension:
-                                        0.3,
-
-                                    borderWidth:
-                                        3,
-
-                                    pointRadius:
-                                        4,
-
-                                    pointHoverRadius:
-                                        6
-                                },
-
-
-                                {
-                                    label:
-                                        'Ganancia después de gastos',
-
-                                    data:
-                                        ganancia,
-
-                                    tension:
-                                        0.3,
-
-                                    borderWidth:
-                                        3,
-
-                                    pointRadius:
-                                        4,
-
-                                    pointHoverRadius:
-                                        6
                                 }
 
                             ]
@@ -1689,17 +1910,38 @@ document.addEventListener(
                                                 context
                                             ) {
 
+                                                if (
+                                                    response.formato
+                                                    ===
+                                                    'MONEDA'
+                                                ) {
+
+                                                    return (
+                                                        response.metrica_nombre
+                                                        +
+                                                        ': '
+                                                        +
+                                                        moneda(
+                                                            context.raw
+                                                        )
+                                                    );
+
+                                                }
+
+
                                                 return (
-                                                    context
-                                                        .dataset
-                                                        .label
+                                                    response.metrica_nombre
                                                     +
                                                     ': '
                                                     +
-                                                    moneda(
+                                                    Number(
                                                         context.raw
                                                     )
+                                                    .toLocaleString(
+                                                        'es-PE'
+                                                    )
                                                 );
+
                                             }
 
                                     }
@@ -1723,15 +1965,33 @@ document.addEventListener(
                                                 value
                                             ) {
 
-                                                return (
-                                                    'S/ '
-                                                    +
-                                                    Number(
-                                                        value
-                                                    ).toLocaleString(
-                                                        'es-PE'
-                                                    )
+                                                if (
+                                                    response.formato
+                                                    ===
+                                                    'MONEDA'
+                                                ) {
+
+                                                    return (
+                                                        'S/ '
+                                                        +
+                                                        Number(
+                                                            value
+                                                        )
+                                                        .toLocaleString(
+                                                            'es-PE'
+                                                        )
+                                                    );
+
+                                                }
+
+
+                                                return Number(
+                                                    value
+                                                )
+                                                .toLocaleString(
+                                                    'es-PE'
                                                 );
+
                                             }
 
                                     }
@@ -1745,569 +2005,1142 @@ document.addEventListener(
                     }
                 );
 
+    }
+
+    $('#filtroProductoPeriodo') .select2({
+        theme:
+            'bootstrap-5',
+
+        width:
+            '100%',
+
+        placeholder:
+            'Todos los productos',
+
+        allowClear:
+            true,
+
+        ajax: {
+            url:
+                '<?= BASE_URL ?>ajax/productos/buscar.php',
+
+            dataType:
+                'json',
+
+            delay:
+                250,
+
+            data:
+                function (params) {
+                    return {
+                        q:
+                            params.term
+                            || ''
+                    };
+                },
+
+            processResults:
+                function (data) {
+                    return data;
+                }
+
         }
 
+    });
 
-        // ====================================================
-        // CAMBIO DE AÑO
-        // ====================================================
 
-        $('#filtroAnio').on(
+    // ====================================================
+    // FORMATO MONEDA
+    // ====================================================
+    function moneda(valor) {
+        return new Intl.NumberFormat(
+            'es-PE',
+            {
+                style:
+                    'currency',
+
+                currency:
+                    'PEN',
+
+                minimumFractionDigits:
+                    2
+            }
+        ).format(
+            Number(valor || 0)
+        );
+    }
+
+
+    // ====================================================
+    // CARGAR GRÁFICO
+    // ====================================================
+    function cargarGraficoMensual() {
+                    const anio =
+                        $('#filtroAnio').val();
+
+
+                    $.ajax({
+
+                        url:
+                            '<?= BASE_URL ?>ajax/reportes/graficos_mensuales.php',
+
+                        type:
+                            'GET',
+
+                        dataType:
+                            'json',
+
+                        data: {
+                            anio: anio
+                        },
+
+
+                        success:
+                            function (response) {
+
+                                if (
+                                    !response.success
+                                ) {
+
+                                    Swal.fire({
+                                        icon:
+                                            'error',
+
+                                        title:
+                                            'Error',
+
+                                        text:
+                                            response.message
+                                    });
+
+                                    return;
+                                }
+
+
+                                pintarResumen(
+                                    response.resumen
+                                );
+
+
+                                pintarGrafico(
+                                    response.data
+                                );
+
+                            },
+
+
+                        error:
+                            function (xhr) {
+
+                                console.error(
+                                    xhr.responseText
+                                );
+
+
+                                Swal.fire({
+                                    icon:
+                                        'error',
+
+                                    title:
+                                        'Error',
+
+                                    text:
+                                        'No se pudo cargar la información de los gráficos.'
+                                });
+
+                            }
+
+                    });
+
+    }
+
+
+    // ====================================================
+    // RESUMEN
+    // ====================================================
+    function pintarResumen(resumen) {
+
+                    $('#totalVentasAnio')
+                        .text(
+                            moneda(
+                                resumen.ventas
+                            )
+                        );
+
+
+                    $('#totalUtilidadAnio')
+                        .text(
+                            moneda(
+                                resumen.utilidad_bruta
+                            )
+                        );
+
+
+                    $('#totalGananciaAnio')
+                        .text(
+                            moneda(
+                                resumen.ganancia
+                            )
+                        );
+
+
+                    /*
+                    * Si la ganancia es negativa,
+                    * la mostramos en rojo.
+                    */
+
+                    const ganancia =
+                        Number(
+                            resumen.ganancia
+                            || 0
+                        );
+
+
+                    $('#totalGananciaAnio')
+                        .removeClass(
+                            'text-success text-danger'
+                        )
+                        .addClass(
+                            ganancia >= 0
+                                ? 'text-success'
+                                : 'text-danger'
+                        );
+
+    }
+
+
+    // ====================================================
+    // PINTAR CHART
+    // ====================================================
+    function pintarGrafico(data) {
+
+                    const contexto =
+                        document
+                            .getElementById(
+                                'graficoMensual'
+                            )
+                            .getContext('2d');
+
+
+                    /*
+                    * Si ya existe un gráfico,
+                    * lo destruimos antes de generar
+                    * el nuevo.
+                    */
+
+                    if (
+                        graficoMensual
+                    ) {
+
+                        graficoMensual.destroy();
+                    }
+
+
+                    const labels =
+                        data.map(
+                            fila =>
+                                fila.mes_nombre
+                        );
+
+
+                    const ventas =
+                        data.map(
+                            fila =>
+                                Number(
+                                    fila.ventas
+                                )
+                        );
+
+
+                    const utilidad =
+                        data.map(
+                            fila =>
+                                Number(
+                                    fila.utilidad_bruta
+                                )
+                        );
+
+
+                    const ganancia =
+                        data.map(
+                            fila =>
+                                Number(
+                                    fila.ganancia
+                                )
+                        );
+
+
+                    graficoMensual =
+                        new Chart(
+                            contexto,
+                            {
+
+                                type:
+                                    'line',
+
+
+                                data: {
+
+                                    labels:
+                                        labels,
+
+
+                                    datasets: [
+
+                                        {
+                                            label:
+                                                'Ventas',
+
+                                            data:
+                                                ventas,
+
+                                            tension:
+                                                0.3,
+
+                                            borderWidth:
+                                                3,
+
+                                            pointRadius:
+                                                4,
+
+                                            pointHoverRadius:
+                                                6
+                                        },
+
+
+                                        {
+                                            label:
+                                                'Utilidad bruta',
+
+                                            data:
+                                                utilidad,
+
+                                            tension:
+                                                0.3,
+
+                                            borderWidth:
+                                                3,
+
+                                            pointRadius:
+                                                4,
+
+                                            pointHoverRadius:
+                                                6
+                                        },
+
+
+                                        {
+                                            label:
+                                                'Ganancia después de gastos',
+
+                                            data:
+                                                ganancia,
+
+                                            tension:
+                                                0.3,
+
+                                            borderWidth:
+                                                3,
+
+                                            pointRadius:
+                                                4,
+
+                                            pointHoverRadius:
+                                                6
+                                        }
+
+                                    ]
+
+                                },
+
+
+                                options: {
+
+                                    responsive:
+                                        true,
+
+                                    maintainAspectRatio:
+                                        false,
+
+
+                                    interaction: {
+
+                                        mode:
+                                            'index',
+
+                                        intersect:
+                                            false
+
+                                    },
+
+
+                                    plugins: {
+
+                                        legend: {
+
+                                            position:
+                                                'bottom'
+
+                                        },
+
+
+                                        tooltip: {
+
+                                            callbacks: {
+
+                                                label:
+                                                    function (
+                                                        context
+                                                    ) {
+
+                                                        return (
+                                                            context
+                                                                .dataset
+                                                                .label
+                                                            +
+                                                            ': '
+                                                            +
+                                                            moneda(
+                                                                context.raw
+                                                            )
+                                                        );
+                                                    }
+
+                                            }
+
+                                        }
+
+                                    },
+
+
+                                    scales: {
+
+                                        y: {
+
+                                            beginAtZero:
+                                                true,
+
+                                            ticks: {
+
+                                                callback:
+                                                    function (
+                                                        value
+                                                    ) {
+
+                                                        return (
+                                                            'S/ '
+                                                            +
+                                                            Number(
+                                                                value
+                                                            ).toLocaleString(
+                                                                'es-PE'
+                                                            )
+                                                        );
+                                                    }
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+                        );
+
+    }
+
+
+    // ====================================================
+    // CAMBIO DE AÑO
+    // ====================================================
+    $('#filtroAnio').on(
+                    'change',
+                    function () {
+
+                        cargarGraficos();
+
+                    }
+    );
+
+
+    // ============================================================
+    // DISTRIBUCIÓN DE GASTOS
+    // ============================================================
+    function cargarGraficoGastos() {
+
+                    const mes =
+                        Number(
+                            $('#filtroMesDetalle').val()
+                        );
+
+
+                    $.ajax({
+
+                        url:
+                            '<?= BASE_URL ?>ajax/reportes/gastos_categoria.php',
+
+                        type:
+                            'GET',
+
+                        dataType:
+                            'json',
+
+                        data: {
+                            mes: mes
+                        },
+
+                        success:
+                            function (response) {
+
+                                if (!response.success) {
+
+                                    console.error(
+                                        response.message
+                                    );
+
+                                    return;
+                                }
+
+
+                                $('#totalGastosGrafico')
+                                    .text(
+                                        moneda(
+                                            response.total
+                                        )
+                                    );
+
+
+                                pintarGraficoGastos(
+                                    response.data
+                                );
+
+                            },
+
+                        error:
+                            function (xhr) {
+
+                                console.error(
+                                    xhr.responseText
+                                );
+
+                            }
+
+                    });
+
+    }
+
+    // ============================================================
+    // PINTAR GRÁFICO DE GASTOS
+    // ============================================================
+    function pintarGraficoGastos(data) {
+
+                    const canvas =
+                        document.getElementById(
+                            'graficoGastos'
+                        );
+
+
+                    const sinDatos =
+                        $('#sinGastos');
+
+
+                    if (
+                        graficoGastos
+                    ) {
+
+                        graficoGastos.destroy();
+
+                        graficoGastos = null;
+                    }
+
+
+                    if (
+                        !data
+                        ||
+                        data.length === 0
+                    ) {
+
+                        $(canvas)
+                            .addClass(
+                                'd-none'
+                            );
+
+
+                        sinDatos
+                            .removeClass(
+                                'd-none'
+                            );
+
+
+                        return;
+                    }
+
+
+                    $(canvas)
+                        .removeClass(
+                            'd-none'
+                        );
+
+
+                    sinDatos
+                        .addClass(
+                            'd-none'
+                        );
+
+
+                    const labels =
+                        data.map(
+                            fila =>
+                                fila.nombre
+                        );
+
+
+                    const valores =
+                        data.map(
+                            fila =>
+                                Number(
+                                    fila.total
+                                )
+                        );
+
+
+                    graficoGastos =
+                        new Chart(
+                            canvas,
+                            {
+
+                                type:
+                                    'doughnut',
+
+
+                                data: {
+
+                                    labels:
+                                        labels,
+
+
+                                    datasets: [
+
+                                        {
+
+                                            data:
+                                                valores,
+
+                                            borderWidth:
+                                                2
+
+                                        }
+
+                                    ]
+
+                                },
+
+
+                                options: {
+
+                                    responsive:
+                                        true,
+
+                                    maintainAspectRatio:
+                                        false,
+
+
+                                    cutout:
+                                        '60%',
+
+
+                                    plugins: {
+
+                                        legend: {
+
+                                            position:
+                                                'bottom'
+
+                                        },
+
+
+                                        tooltip: {
+
+                                            callbacks: {
+
+                                                label:
+                                                    function (
+                                                        context
+                                                    ) {
+
+                                                        const valor =
+                                                            Number(
+                                                                context.raw
+                                                            );
+
+
+                                                        const total =
+                                                            context
+                                                                .dataset
+                                                                .data
+                                                                .reduce(
+                                                                    (
+                                                                        suma,
+                                                                        item
+                                                                    ) =>
+                                                                        suma
+                                                                        +
+                                                                        Number(
+                                                                            item
+                                                                        ),
+                                                                    0
+                                                                );
+
+
+                                                        const porcentaje =
+                                                            total > 0
+
+                                                                ? (
+                                                                    valor
+                                                                    /
+                                                                    total
+                                                                    *
+                                                                    100
+                                                                )
+
+                                                                : 0;
+
+
+                                                        return (
+                                                            context.label
+                                                            +
+                                                            ': '
+                                                            +
+                                                            moneda(
+                                                                valor
+                                                            )
+                                                            +
+                                                            ' ('
+                                                            +
+                                                            porcentaje.toFixed(
+                                                                1
+                                                            )
+                                                            +
+                                                            '%)'
+                                                        );
+                                                    }
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+                        );
+    }
+
+                
+
+    // ============================================================
+    // TOP PRODUCTOS
+    // ============================================================
+    function cargarGraficoProductos() {
+
+                    const mes =
+                        Number(
+                            $('#filtroMesDetalle').val()
+                        );
+
+
+                    $.ajax({
+
+                        url:
+                            '<?= BASE_URL ?>ajax/reportes/top_productos.php',
+
+                        type:
+                            'GET',
+
+                        dataType:
+                            'json',
+
+                        data: {
+                            mes: mes
+                        },
+
+                        success:
+                            function (response) {
+
+                                if (!response.success) {
+
+                                    console.error(
+                                        response.message
+                                    );
+
+                                    return;
+                                }
+
+
+                                pintarGraficoProductos(
+                                    response.data
+                                );
+
+                            },
+
+                        error:
+                            function (xhr) {
+
+                                console.error(
+                                    xhr.responseText
+                                );
+
+                            }
+
+                    });
+
+    }
+
+
+    // ============================================================
+    // PINTAR GRAFICO PRODUCTOS
+    // ============================================================
+    function pintarGraficoProductos(data) {
+
+                    const canvas =
+                        document.getElementById(
+                            'graficoProductos'
+                        );
+
+
+                    const sinDatos =
+                        $('#sinProductos');
+
+
+                    if (
+                        graficoProductos
+                    ) {
+
+                        graficoProductos.destroy();
+
+                        graficoProductos = null;
+                    }
+
+
+                    if (
+                        !data
+                        ||
+                        data.length === 0
+                    ) {
+
+                        $(canvas)
+                            .addClass(
+                                'd-none'
+                            );
+
+
+                        sinDatos
+                            .removeClass(
+                                'd-none'
+                            );
+
+
+                        return;
+                    }
+
+
+                    $(canvas)
+                        .removeClass(
+                            'd-none'
+                        );
+
+
+                    sinDatos
+                        .addClass(
+                            'd-none'
+                        );
+
+
+                    const labels =
+                        data.map(
+                            fila =>
+                                fila.producto
+                        );
+
+
+                    const cantidades =
+                        data.map(
+                            fila =>
+                                Number(
+                                    fila.cantidad
+                                )
+                        );
+
+
+                    graficoProductos =
+                        new Chart(
+                            canvas,
+                            {
+
+                                type:
+                                    'bar',
+
+
+                                data: {
+
+                                    labels:
+                                        labels,
+
+
+                                    datasets: [
+
+                                        {
+
+                                            label:
+                                                'Unidades vendidas',
+
+                                            data:
+                                                cantidades,
+
+                                            borderWidth:
+                                                1
+
+                                        }
+
+                                    ]
+
+                                },
+
+
+                                options: {
+
+                                    indexAxis:
+                                        'y',
+
+
+                                    responsive:
+                                        true,
+
+                                    maintainAspectRatio:
+                                        false,
+
+
+                                    plugins: {
+
+                                        legend: {
+
+                                            display:
+                                                false
+
+                                        },
+
+
+                                        tooltip: {
+
+                                            callbacks: {
+
+                                                label:
+                                                    function (
+                                                        context
+                                                    ) {
+
+                                                        return (
+                                                            Number(
+                                                                context.raw
+                                                            )
+                                                            .toLocaleString(
+                                                                'es-PE'
+                                                            )
+                                                            +
+                                                            ' unidades'
+                                                        );
+                                                    }
+
+                                            }
+
+                                        }
+
+                                    },
+
+
+                                    scales: {
+
+                                        x: {
+
+                                            beginAtZero:
+                                                true,
+
+                                            ticks: {
+
+                                                precision:
+                                                    0
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+                        );
+    }
+
+
+    // ====================================================
+    // INICIAL
+    // ====================================================
+    function cargarGraficos() {
+
+                    cargarGraficoMensual();
+
+                    cargarGraficoGastos();
+
+                    cargarGraficoProductos();
+
+                    cargarGraficoClientes();
+
+                    cargarGraficoPeriodo();
+    }
+
+    cargarGraficos();
+
+        $('#filtroClientePeriodo').select2({
+
+            theme:
+                'bootstrap-5',
+            width:
+                '100%',
+            placeholder:
+                'Todos los clientes',
+            allowClear:
+                true,
+            minimumInputLength:
+                0,
+            ajax: {
+                url: '<?= BASE_URL ?>ajax/clientes/buscar.php',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                         q: params.term || ''
+                    };
+                },
+                processResults: function (data) {
+                    return data;
+                }
+            }
+        });        
+    
+        $('#filtroProductoPeriodo').on(
             'change',
             function () {
 
-                cargarGraficos();
+                const productoId =
+                    Number(
+                        $(this).val()
+                        || 0
+                    );
+
+
+                /*
+                * Cuando seleccionamos un producto,
+                * por defecto queremos saber
+                * cuántas unidades vendió.
+                */
+
+                if (
+                    productoId > 0
+                ) {
+
+                    $('#filtroMetricaPeriodo')
+                        .val(
+                            'UNIDADES'
+                        );
+
+                }
+
+
+                cargarGraficoPeriodo();
 
             }
         );
 
 
-        // ============================================================
-        // DISTRIBUCIÓN DE GASTOS
-        // ============================================================
+        $('#filtroPeriodoGrafico') .on( 'change', function () {
 
-        function cargarGraficoGastos() {
-
-            const mes =
-                Number(
-                    $('#filtroMesDetalle').val()
-                );
+                const personalizado =
+                    $(this).val()
+                    ===
+                    'PERSONALIZADO';
 
 
-            $.ajax({
-
-                url:
-                    '<?= BASE_URL ?>ajax/reportes/gastos_categoria.php',
-
-                type:
-                    'GET',
-
-                dataType:
-                    'json',
-
-                data: {
-                    mes: mes
-                },
-
-                success:
-                    function (response) {
-
-                        if (!response.success) {
-
-                            console.error(
-                                response.message
-                            );
-
-                            return;
-                        }
-
-
-                        $('#totalGastosGrafico')
-                            .text(
-                                moneda(
-                                    response.total
-                                )
-                            );
-
-
-                        pintarGraficoGastos(
-                            response.data
-                        );
-
-                    },
-
-                error:
-                    function (xhr) {
-
-                        console.error(
-                            xhr.responseText
-                        );
-
-                    }
-
-            });
-
-        }
-
-        // ============================================================
-        // PINTAR GRÁFICO DE GASTOS
-        // ============================================================
-
-
-        function pintarGraficoGastos(data) {
-
-            const canvas =
-                document.getElementById(
-                    'graficoGastos'
-                );
-
-
-            const sinDatos =
-                $('#sinGastos');
-
-
-            if (
-                graficoGastos
-            ) {
-
-                graficoGastos.destroy();
-
-                graficoGastos = null;
-            }
-
-
-            if (
-                !data
-                ||
-                data.length === 0
-            ) {
-
-                $(canvas)
-                    .addClass(
-                        'd-none'
+                $('#contenedorFechasPeriodo')
+                    .toggleClass(
+                        'd-none',
+                        !personalizado
                     );
 
 
-                sinDatos
-                    .removeClass(
-                        'd-none'
-                    );
+                if (
+                    !personalizado
+                ) {
 
+                    cargarGraficoPeriodo();
 
-                return;
+                }
+
             }
+        );
 
 
-            $(canvas)
-                .removeClass(
-                    'd-none'
-                );
+        $('#filtroMetricaPeriodo').on(
+            'change',
+            function () {
 
+                cargarGraficoPeriodo();
 
-            sinDatos
-                .addClass(
-                    'd-none'
-                );
-
-
-            const labels =
-                data.map(
-                    fila =>
-                        fila.nombre
-                );
-
-
-            const valores =
-                data.map(
-                    fila =>
-                        Number(
-                            fila.total
-                        )
-                );
-
-
-            graficoGastos =
-                new Chart(
-                    canvas,
-                    {
-
-                        type:
-                            'doughnut',
-
-
-                        data: {
-
-                            labels:
-                                labels,
-
-
-                            datasets: [
-
-                                {
-
-                                    data:
-                                        valores,
-
-                                    borderWidth:
-                                        2
-
-                                }
-
-                            ]
-
-                        },
-
-
-                        options: {
-
-                            responsive:
-                                true,
-
-                            maintainAspectRatio:
-                                false,
-
-
-                            cutout:
-                                '60%',
-
-
-                            plugins: {
-
-                                legend: {
-
-                                    position:
-                                        'bottom'
-
-                                },
-
-
-                                tooltip: {
-
-                                    callbacks: {
-
-                                        label:
-                                            function (
-                                                context
-                                            ) {
-
-                                                const valor =
-                                                    Number(
-                                                        context.raw
-                                                    );
-
-
-                                                const total =
-                                                    context
-                                                        .dataset
-                                                        .data
-                                                        .reduce(
-                                                            (
-                                                                suma,
-                                                                item
-                                                            ) =>
-                                                                suma
-                                                                +
-                                                                Number(
-                                                                    item
-                                                                ),
-                                                            0
-                                                        );
-
-
-                                                const porcentaje =
-                                                    total > 0
-
-                                                        ? (
-                                                            valor
-                                                            /
-                                                            total
-                                                            *
-                                                            100
-                                                        )
-
-                                                        : 0;
-
-
-                                                return (
-                                                    context.label
-                                                    +
-                                                    ': '
-                                                    +
-                                                    moneda(
-                                                        valor
-                                                    )
-                                                    +
-                                                    ' ('
-                                                    +
-                                                    porcentaje.toFixed(
-                                                        1
-                                                    )
-                                                    +
-                                                    '%)'
-                                                );
-                                            }
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                );
-        }
-
-        
-
-        // ============================================================
-        // TOP PRODUCTOS
-        // ============================================================
-
-        function cargarGraficoProductos() {
-
-            const mes =
-                Number(
-                    $('#filtroMesDetalle').val()
-                );
-
-
-            $.ajax({
-
-                url:
-                    '<?= BASE_URL ?>ajax/reportes/top_productos.php',
-
-                type:
-                    'GET',
-
-                dataType:
-                    'json',
-
-                data: {
-                    mes: mes
-                },
-
-                success:
-                    function (response) {
-
-                        if (!response.success) {
-
-                            console.error(
-                                response.message
-                            );
-
-                            return;
-                        }
-
-
-                        pintarGraficoProductos(
-                            response.data
-                        );
-
-                    },
-
-                error:
-                    function (xhr) {
-
-                        console.error(
-                            xhr.responseText
-                        );
-
-                    }
-
-            });
-
-        }
-
-
-        // ============================================================
-        // PINTAR GRAFICO PRODUCTOS
-        // ============================================================
-
-        function pintarGraficoProductos(data) {
-
-            const canvas =
-                document.getElementById(
-                    'graficoProductos'
-                );
-
-
-            const sinDatos =
-                $('#sinProductos');
-
-
-            if (
-                graficoProductos
-            ) {
-
-                graficoProductos.destroy();
-
-                graficoProductos = null;
             }
+        );
 
 
-            if (
-                !data
-                ||
-                data.length === 0
-            ) {
+        $('#filtroClientePeriodo').on(
+            'change',
+            function () {
 
-                $(canvas)
-                    .addClass(
-                        'd-none'
-                    );
+                cargarGraficoPeriodo();
 
-
-                sinDatos
-                    .removeClass(
-                        'd-none'
-                    );
-
-
-                return;
             }
+        );
 
 
-            $(canvas)
-                .removeClass(
-                    'd-none'
-                );
+        $( '#fechaDesdePeriodo, #fechaHastaPeriodo' ).on( 'change',
+            function () {
+
+                const desde =
+                    $('#fechaDesdePeriodo')
+                        .val();
 
 
-            sinDatos
-                .addClass(
-                    'd-none'
-                );
+                const hasta =
+                    $('#fechaHastaPeriodo')
+                        .val();
 
 
-            const labels =
-                data.map(
-                    fila =>
-                        fila.producto
-                );
+                if (
+                    desde
+                    &&
+                    hasta
+                ) {
 
+                    cargarGraficoPeriodo();
 
-            const cantidades =
-                data.map(
-                    fila =>
-                        Number(
-                            fila.cantidad
-                        )
-                );
+                }
 
+            }
+        );
 
-            graficoProductos =
-                new Chart(
-                    canvas,
-                    {
-
-                        type:
-                            'bar',
-
-
-                        data: {
-
-                            labels:
-                                labels,
-
-
-                            datasets: [
-
-                                {
-
-                                    label:
-                                        'Unidades vendidas',
-
-                                    data:
-                                        cantidades,
-
-                                    borderWidth:
-                                        1
-
-                                }
-
-                            ]
-
-                        },
-
-
-                        options: {
-
-                            indexAxis:
-                                'y',
-
-
-                            responsive:
-                                true,
-
-                            maintainAspectRatio:
-                                false,
-
-
-                            plugins: {
-
-                                legend: {
-
-                                    display:
-                                        false
-
-                                },
-
-
-                                tooltip: {
-
-                                    callbacks: {
-
-                                        label:
-                                            function (
-                                                context
-                                            ) {
-
-                                                return (
-                                                    Number(
-                                                        context.raw
-                                                    )
-                                                    .toLocaleString(
-                                                        'es-PE'
-                                                    )
-                                                    +
-                                                    ' unidades'
-                                                );
-                                            }
-
-                                    }
-
-                                }
-
-                            },
-
-
-                            scales: {
-
-                                x: {
-
-                                    beginAtZero:
-                                        true,
-
-                                    ticks: {
-
-                                        precision:
-                                            0
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-                );
-        }
-
-
-        // ====================================================
-        // INICIAL
-        // ====================================================
-
-        function cargarGraficos() {
-
-            cargarGraficoMensual();
-
-            cargarGraficoGastos();
-
-            cargarGraficoProductos();
-
-            cargarGraficoClientes();
-        }
-
-
-        cargarGraficos();
-
-    }
-);
+    });
+            
 
 </script>
 

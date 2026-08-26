@@ -79,6 +79,32 @@ if (mb_strlen($nombre) > 150) {
 }
 
 
+$fechaNacimiento =
+    trim(
+        $_POST['fecha_nacimiento']
+        ?? ''
+    );
+
+
+if ($fechaNacimiento === '') {
+
+    $fechaNacimiento = null;
+
+}
+
+if (
+    $fechaNacimiento !== null
+    &&
+    $fechaNacimiento > date('Y-m-d')
+) {
+
+    responder(
+        false,
+        'La fecha de nacimiento no puede ser futura.'
+    );
+}
+
+
 /* ============================================================
    CREAR
 ============================================================ */
@@ -89,12 +115,16 @@ if ($id === null) {
         INSERT INTO clientes (
             nombre,
             telefono,
+            fecha_nacimiento,
             direccion,
-            observacion,
             activo
         )
         VALUES (
-            ?, ?, ?, ?, 1
+            ?,
+            ?,
+            ?,
+            ?,
+            1
         )
     ";
 
@@ -117,8 +147,8 @@ if ($id === null) {
         'ssss',
         $nombre,
         $telefono,
-        $direccion,
-        $observacion
+        $fechaNacimiento,
+        $direccion
     );
 
 
@@ -148,16 +178,12 @@ if ($id === null) {
 
 $sql = "
     UPDATE clientes
-
     SET
         nombre = ?,
         telefono = ?,
-        direccion = ?,
-        observacion = ?
-
+        fecha_nacimiento = ?,
+        direccion = ?
     WHERE id = ?
-
-    LIMIT 1
 ";
 
 
@@ -179,8 +205,8 @@ $stmt->bind_param(
     'ssssi',
     $nombre,
     $telefono,
+    $fechaNacimiento,
     $direccion,
-    $observacion,
     $id
 );
 

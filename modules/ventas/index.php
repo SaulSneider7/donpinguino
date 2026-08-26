@@ -44,7 +44,7 @@ require_once __DIR__ . '/../../includes/navbar.php';
                 >
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Registrado por</th>
                         <th>Fecha</th>
                         <th>Cliente</th>
                         <th>Total</th>
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
             columns: [
 
                 {
-                    data: 'id'
+                    data: 'usuario'
                 },
 
                 {

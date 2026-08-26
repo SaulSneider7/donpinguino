@@ -475,6 +475,58 @@ $regalosMesCosto =
     );
 
 
+
+/* ============================================================
+   GASTOS DEL MES
+============================================================ */
+
+$sqlGastos = "
+    SELECT
+
+        COUNT(*) AS cantidad,
+
+        COALESCE(
+            SUM(monto),
+            0
+        ) AS total
+
+    FROM gastos
+
+    WHERE
+        activo = 1
+
+        AND YEAR(fecha) = YEAR(CURDATE())
+
+        AND MONTH(fecha) = MONTH(CURDATE())
+";
+
+
+$resultGastos =
+    $conn->query(
+        $sqlGastos
+    );
+
+
+$gastosMes =
+    $resultGastos
+        ->fetch_assoc();
+
+
+$totalGastosMes =
+    round(
+        (float)
+        $gastosMes['total'],
+        2
+    );
+
+
+$cantidadGastosMes =
+    (int)
+    $gastosMes['cantidad'];
+
+
+
+
 /* ============================================================
    ÚLTIMAS VENTAS
 ============================================================ */
@@ -692,6 +744,16 @@ responder(
 
             'costo' =>
                 $regalosMesCosto
+        ],
+
+        'gastos_mes' => [
+
+            'total' =>
+                $totalGastosMes,
+
+            'cantidad' =>
+                $cantidadGastosMes
+
         ],
 
         'ultimas_ventas' =>

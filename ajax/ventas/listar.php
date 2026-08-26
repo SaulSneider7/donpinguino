@@ -82,7 +82,7 @@ if (
 
 $orderColumns = [
 
-    0 => 'v.id',
+    0 => 'u.nombre',
     1 => 'v.fecha',
     2 => 'c.nombre',
     3 => 'v.total',
@@ -133,7 +133,7 @@ if ($search !== '') {
 
     $where = "
         WHERE (
-            CAST(v.id AS CHAR) LIKE ?
+            u.nombre LIKE ?
             OR c.nombre LIKE ?
             OR v.estado_pago LIKE ?
         )
@@ -155,7 +155,6 @@ if ($search !== '') {
         'sss';
 }
 
-
 /* ============================================================
    TOTAL FILTRADO
 ============================================================ */
@@ -168,6 +167,9 @@ $sqlFiltered = "
 
     LEFT JOIN clientes c
         ON c.id = v.cliente_id
+
+    LEFT JOIN usuarios u
+        ON u.id = v.usuario_id
 
     $where
 ";
@@ -214,12 +216,17 @@ $sql = "
         v.estado_pago,
         v.estado,
 
-        c.nombre AS cliente
+        c.nombre AS cliente,
+
+        u.nombre AS usuario_nombre
 
     FROM ventas v
 
     LEFT JOIN clientes c
         ON c.id = v.cliente_id
+
+    LEFT JOIN usuarios u
+        ON u.id = v.usuario_id
 
     $where
 
@@ -402,8 +409,10 @@ while (
 
     $data[] = [
 
-        'id' =>
-            $id,
+        'usuario' =>
+            htmlspecialchars(
+                $row['usuario_nombre']
+            ),
 
         'fecha' =>
             date(

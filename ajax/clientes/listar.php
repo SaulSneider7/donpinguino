@@ -87,8 +87,9 @@ $orderColumns = [
     0 => 'c.id',
     1 => 'c.nombre',
     2 => 'c.telefono',
-    3 => 'c.direccion',
-    4 => 'c.activo'
+    3 => 'c.fecha_nacimiento',
+    4 => 'c.direccion',
+    5 => 'c.activo'
 ];
 
 
@@ -197,6 +198,7 @@ $sql = "
         c.nombre,
         c.telefono,
         c.direccion,
+        c.fecha_nacimiento,
         c.observacion,
         c.activo
 
@@ -298,21 +300,105 @@ while (
 
     if (!empty($row['telefono'])) {
 
-        $telefono = '
-            <i class="fa-solid fa-phone me-1 text-muted"></i>
-            '
-            . htmlspecialchars(
+        /*
+        * Dejamos solo números.
+        * Ejemplo:
+        * 987 654 321
+        * -> 987654321
+        */
+        $telefonoLimpio =
+            preg_replace(
+                '/\D+/',
+                '',
                 $row['telefono']
             );
+
+
+        /*
+        * Como todos los números son peruanos,
+        * agregamos 51 si todavía no lo tiene.
+        */
+        if (
+            !str_starts_with(
+                $telefonoLimpio,
+                '51'
+            )
+        ) {
+
+            $telefonoWhatsapp =
+                '51'
+                .
+                $telefonoLimpio;
+
+        } else {
+
+            $telefonoWhatsapp =
+                $telefonoLimpio;
+        }
+
+
+        $telefono = '
+
+            <div class="d-flex align-items-center gap-2">
+
+                <span>
+
+                    <i
+                        class="fa-solid fa-phone me-1 text-muted"
+                    ></i>
+
+                    '
+                    . htmlspecialchars(
+                        $row['telefono']
+                    )
+                    . '
+
+                </span>
+
+
+                <a
+                    href="https://wa.me/'
+                    . htmlspecialchars(
+                        $telefonoWhatsapp
+                    )
+                    . '"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-sm btn-success rounded-circle"
+                    title="Abrir WhatsApp"
+                >
+
+                    <i class="fa-brands fa-whatsapp"></i>
+
+                </a>
+
+            </div>
+
+        ';
 
     } else {
 
         $telefono = '
+
             <span class="text-muted">
                 -
             </span>
+
         ';
     }
+
+    /* FECHA DE NACIMIENTO */
+
+    $fechaNacimiento =
+        !empty($row['fecha_nacimiento'])
+            ? date(
+                'd/m/Y',
+                strtotime(
+                    $row['fecha_nacimiento']
+                )
+            )
+            : '<span class="text-muted">-</span>';
+
 
 
     /* DIRECCIÓN */
@@ -426,6 +512,9 @@ while (
 
         'telefono' =>
             $telefono,
+
+        'fecha_nacimiento' =>
+            $fechaNacimiento,
 
         'direccion' =>
             $direccion,

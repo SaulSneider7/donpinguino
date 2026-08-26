@@ -57,6 +57,7 @@ $sql = "
         id,
         nombre,
         telefono,
+        fecha_nacimiento,
         direccion,
         observacion,
         activo
