@@ -123,6 +123,73 @@ function imagenProducto(
         );
 }
 
+
+$urlCanonical =
+    'https://www.licoreriadonpinguino.com/';
+
+
+$datosSchema = [
+    '@context' => 'https://schema.org',
+    '@graph' => [
+        [
+            '@type' => 'WebSite',
+            '@id' => $urlCanonical . '#website',
+            'url' => $urlCanonical,
+            'name' => 'Licorería Don Pingüino',
+            'inLanguage' => 'es-PE',
+        ],
+        [
+            '@type' => 'Store',
+            '@id' => $urlCanonical . '#store',
+            'name' => 'Licorería Don Pingüino',
+            'url' => $urlCanonical,
+            'description' => 'Catálogo online de bebidas, licores, cervezas, combos, hielo y más.',
+        ],
+        [
+            '@type' => 'ItemList',
+            'name' => 'Productos de Licorería Don Pingüino',
+            'numberOfItems' => count($productos),
+            'itemListElement' => array_map(
+                static function (array $producto, int $indice): array {
+                    $item = [
+                        '@type' => 'Product',
+                        'name' => $producto['nombre'],
+                        'offers' => [
+                            '@type' => 'Offer',
+                            'priceCurrency' => 'PEN',
+                            'price' => number_format(
+                                (float) $producto['precio_venta'],
+                                2,
+                                '.',
+                                ''
+                            ),
+                            'availability' => (
+                                $producto['tipo_producto'] === 'SIMPLE'
+                                && (int) $producto['maneja_stock'] === 1
+                                && (float) $producto['stock_actual'] <= 0
+                            )
+                                ? 'https://schema.org/OutOfStock'
+                                : 'https://schema.org/InStock',
+                        ],
+                    ];
+
+                    if ($producto['imagen_url']) {
+                        $item['image'] = imagenProducto($producto['imagen_url']);
+                    }
+
+                    return [
+                        '@type' => 'ListItem',
+                        'position' => $indice + 1,
+                        'item' => $item,
+                    ];
+                },
+                $productos,
+                array_keys($productos)
+            ),
+        ],
+    ],
+];
+
 ?>
 <!doctype html>
 
@@ -139,7 +206,7 @@ function imagenProducto(
 
 
     <title>
-        Catálogo | <?= htmlspecialchars(CATALOGO_NOMBRE) ?>
+        Licorería Don Pingüino | Bebidas, licores y combos
     </title>
 
 
@@ -147,6 +214,30 @@ function imagenProducto(
         name="description"
         content="Catálogo virtual de Don Pingüino. Cervezas, licores, combos, hielo, bebidas y más."
     >
+
+    <meta name="robots" content="index, follow">
+
+    <link rel="canonical" href="<?= $urlCanonical ?>">
+
+    <meta name="theme-color" content="#212529">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_PE">
+    <meta property="og:site_name" content="Licorería Don Pingüino">
+    <meta property="og:title" content="Licorería Don Pingüino | Bebidas, licores y combos">
+    <meta property="og:description" content="Compra bebidas, licores, cervezas, combos y hielo en el catálogo online de Don Pingüino.">
+    <meta property="og:url" content="<?= $urlCanonical ?>">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Licorería Don Pingüino | Bebidas, licores y combos">
+    <meta name="twitter:description" content="Compra bebidas, licores, cervezas, combos y hielo en el catálogo online de Don Pingüino.">
+
+    <script type="application/ld+json">
+<?= json_encode(
+    $datosSchema,
+    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+) ?>
+    </script>
 
 
     <!-- Bootstrap -->
@@ -182,44 +273,31 @@ function imagenProducto(
      NAVBAR
 ========================================================= -->
 
-<nav
-    class="
-        navbar
-        navbar-expand-lg
-        bg-dark
-        navbar-dark
-        sticky-top
-        shadow-sm
-    "
->
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark sticky-top shadow-sm py-1 py-md-2">
+    <div class="container flex-nowrap align-items-center">
 
-    <div class="container">
-
-        <a
-            class="navbar-brand fw-bold"
-            href="/"
-        >
-
-            <i class="fa-solid fa-snowflake me-2"></i>
-
-            Don Pingüino
-
+        <a class="navbar-brand d-flex align-items-center py-0 me-2 me-md-3 text-wrap" href="<?= CATALOGO_BASE_URL ?>">
+            <!-- Logo responsivo: 55px en móvil, 90px en pantallas medianas/grandes -->
+            <img src="<?= CATALOGO_BASE_URL ?>assets/img/logo.png" alt="Don Pingüino Logo" class="logo-navbar me-2">
+            
+            <!-- Texto visible en todos los dispositivos -->
+            <div class="d-flex flex-column justify-content-center">
+                <span class="fw-bold lh-1 title-navbar">Licorería Don Pingüino</span>
+                <small class="text-warning fst-italic slogan-navbar mt-1">Rey del hielo y el trago</small>
+            </div>
         </a>
-
 
         <button
             type="button"
-            class="btn btn-warning position-relative"
+            class="btn btn-warning position-relative flex-shrink-0 ms-auto"
             data-bs-toggle="offcanvas"
             data-bs-target="#carritoOffcanvas"
         >
-
             <i class="fa-solid fa-cart-shopping"></i>
 
             <span class="d-none d-sm-inline ms-1">
                 Carrito
             </span>
-
 
             <span
                 class="
@@ -235,12 +313,40 @@ function imagenProducto(
             >
                 0
             </span>
-
         </button>
 
     </div>
-
 </nav>
+
+<!-- Estilos rápidos para controlar los tamaños responsive sin romper la barra -->
+<style>
+    /* Logo adaptativo */
+    .logo-navbar {
+        height: 55px;
+        width: auto;
+    }
+    /* Tamaños de texto para celular */
+    .title-navbar {
+        font-size: 0.95rem;
+    }
+    .slogan-navbar {
+        font-size: 0.75rem;
+        line-height: 1;
+    }
+
+    /* Ajustes para pantallas medianas y grandes (Computadoras / Tablets) */
+    @media (min-width: 768px) {
+        .logo-navbar {
+            height: 90px;
+        }
+        .title-navbar {
+            font-size: 1.25rem;
+        }
+        .slogan-navbar {
+            font-size: 0.9rem;
+        }
+    }
+</style>
 
 
 
@@ -269,7 +375,7 @@ function imagenProducto(
 
 
                 <h1 class="display-5 fw-bold">
-                    ¿Qué vamos a tomar hoy?
+                    Licorería Don Pingüino: bebidas, licores y combos
                 </h1>
 
 
@@ -840,16 +946,31 @@ function imagenProducto(
      FOOTER
 ========================================================= -->
 
-<footer class="bg-dark text-white py-4 mt-5">
+<footer class="bg-dark text-white py-4 mt-5 border-top border-secondary">
 
     <div class="container text-center">
 
-        <div class="fw-bold">
-            Don Pingüino
+        <!-- Marca y Eslogan -->
+        <div class="fw-bold fs-5 mb-1">
+            Licorería Don Pingüino
         </div>
 
-        <div class="small text-white-50">
-            Catálogo virtual
+        <div class="small text-warning fst-italic mb-3">
+            Rey del hielo y el trago
+        </div>
+
+        <hr class="border-secondary opacity-25 my-3 w-50 mx-auto">
+
+        <!-- Copyright y Crédito de Desarrollo -->
+        <div class="small text-white-50 d-flex flex-column flex-sm-row justify-content-center align-items-center gap-1">
+            <span>&copy; <?= date('Y') ?> <strong>Don Pingüino</strong>. Todos los derechos reservados.</span>
+            <span class="d-none d-sm-inline">|</span>
+            <span>
+                Desarrollado por 
+                <a href="https://tu-sitioweb.com" target="_blank" rel="noopener noreferrer" class="text-warning text-decoration-none fw-semibold">
+                    &lt;/&gt; Tu SitioWeb
+                </a>
+            </span>
         </div>
 
     </div>
