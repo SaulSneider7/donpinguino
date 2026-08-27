@@ -22,6 +22,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
         <?= htmlspecialchars($pageTitle) ?> | <?= APP_NAME ?>
     </title>
 
+    <link rel="shortcut icon" href="<?= BASE_URL ?>/assets/img/favicon.webp" type="image/x-icon">
 
     <!-- =====================================================
          CSS

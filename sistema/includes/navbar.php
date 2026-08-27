@@ -53,7 +53,12 @@ function navActive(
                 class="navbar-brand fw-bold mb-0"
                 href="<?= BASE_URL ?>index.php"
             >
-                <i class="fa-solid fa-store me-2"></i>
+                <img
+                    src="<?= BASE_URL ?>/assets/img/favicon.webp"
+                    alt="Don Pingüino"
+                    class="d-inline-block align-text-top"
+                    width="20"
+                >
                 Don Pingüino
             </a>
 

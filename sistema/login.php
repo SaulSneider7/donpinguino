@@ -22,6 +22,9 @@ if (isset($_SESSION['usuario_id'])) {
 
     <title>Iniciar sesión | <?= APP_NAME ?></title>
 
+    <link rel="shortcut icon" href="<?= BASE_URL ?>/assets/img/favicon.webp" type="image/x-icon">
+
+
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -47,7 +50,12 @@ if (isset($_SESSION['usuario_id'])) {
 
                     <div class="text-center mb-4">
 
-                        <i class="fa-solid fa-store fa-3x mb-3"></i>
+                        <img
+                            src="<?= BASE_URL ?>/assets/img/favicon.webp"
+                            alt="Logo Don Pingüino"
+                            class="img-fluid"
+                            width="50"
+                        >
 
                         <h3 class="fw-bold mb-1">
                             Don Pingüino

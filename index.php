@@ -218,6 +218,7 @@ $datosSchema = [
     <meta name="robots" content="index, follow">
 
     <link rel="canonical" href="<?= $urlCanonical ?>">
+    <link rel="icon" href="<?= CATALOGO_BASE_URL ?>assets/img/favicon.webp">
 
     <meta name="theme-color" content="#212529">
 
