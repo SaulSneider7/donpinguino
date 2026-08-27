@@ -18,6 +18,11 @@ $pageTitle = $pageTitle ?? APP_NAME;
         content="width=device-width, initial-scale=1"
     >
 
+    <meta
+        name="robots"
+        content="noindex,nofollow"
+    >
+
     <title>
         <?= htmlspecialchars($pageTitle) ?> | <?= APP_NAME ?>
     </title>
