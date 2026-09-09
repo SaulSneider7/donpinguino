@@ -234,10 +234,10 @@ $datosSchema = [
     <meta name="twitter:description" content="Compra bebidas, licores, cervezas, combos y hielo en el catálogo online de Don Pingüino.">
 
     <script type="application/ld+json">
-<?= json_encode(
-    $datosSchema,
-    JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-) ?>
+        <?= json_encode(
+            $datosSchema,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        ) ?>
     </script>
 
 
@@ -260,7 +260,7 @@ $datosSchema = [
     <!-- CSS -->
 
     <link
-        href="<?= CATALOGO_BASE_URL ?>assets/css/catalogo.css"
+        href="<?= CATALOGO_BASE_URL ?>assets/css/catalogo.css?v=08092026"
         rel="stylesheet"
     >
 
@@ -355,7 +355,7 @@ $datosSchema = [
      HERO
 ========================================================= -->
 
-<section class="bg-dark text-white py-5">
+<section class="catalogo-hero text-white py-5">
 
     <div class="container">
 
@@ -376,7 +376,7 @@ $datosSchema = [
 
 
                 <h1 class="display-5 fw-bold">
-                    Licorería Don Pingüino: bebidas, licores y combos
+                    Tus favoritos, listos para compartir.
                 </h1>
 
 
@@ -384,11 +384,19 @@ $datosSchema = [
                     Encuentra tus bebidas favoritas y envía tu pedido directamente por WhatsApp.
                 </p>
 
+                <div class="hero-pasos mt-4" aria-label="Cómo hacer tu pedido">
+                    <span><b>1</b> Elige tus bebidas</span>
+                    <span><b>2</b> Arma tu carrito</span>
+                    <span><b>3</b> Pide por WhatsApp</span>
+                </div>
+
             </div>
 
 
             <div class="col-12 col-lg-5">
 
+                <div class="buscador-catalogo">
+                <label for="buscarProducto" class="fw-semibold mb-2">¿Qué se te antoja hoy?</label>
                 <div class="input-group input-group-lg">
 
                     <span class="input-group-text bg-white">
@@ -406,6 +414,8 @@ $datosSchema = [
                         autocomplete="off"
                     >
 
+                </div>
+                <p class="small mb-0 mt-3 text-white-50">Explora nuestras bebidas, licores, hielo y combos.</p>
                 </div>
 
             </div>
@@ -480,7 +490,7 @@ $datosSchema = [
         <div>
 
             <h2 class="h4 fw-bold mb-1">
-                Productos
+                Encuentra tu próximo favorito
             </h2>
 
             <div
@@ -545,6 +555,7 @@ $datosSchema = [
                         $producto['categoria']
                         ?? ''
                     )
+                    . ' ' . ($producto['descripcion'] ?? '')
                 );
 
             ?>
@@ -688,6 +699,14 @@ $datosSchema = [
 
                         <?php endif; ?>
 
+
+                        <?php if (trim((string) ($producto['descripcion'] ?? '')) !== ''): ?>
+                            <p class="producto-descripcion"><?= htmlspecialchars(
+                                $producto['descripcion'],
+                                ENT_QUOTES | ENT_SUBSTITUTE,
+                                'UTF-8'
+                            ) ?></p>
+                        <?php endif; ?>
 
                         <div class="mt-auto">
 
@@ -834,13 +853,14 @@ $datosSchema = [
     class="offcanvas offcanvas-end"
     tabindex="-1"
     id="carritoOffcanvas"
+    aria-labelledby="tituloCarrito"
 >
 
     <div class="offcanvas-header">
 
         <div>
 
-            <h5 class="offcanvas-title fw-bold">
+            <h5 class="offcanvas-title fw-bold" id="tituloCarrito">
                 Tu pedido
             </h5>
 
@@ -855,6 +875,7 @@ $datosSchema = [
             type="button"
             class="btn-close"
             data-bs-dismiss="offcanvas"
+            aria-label="Cerrar carrito"
         ></button>
 
     </div>
@@ -934,6 +955,8 @@ $datosSchema = [
                 </button>
 
             </div>
+
+            <p class="small text-muted text-center mt-3 mb-0">Al abrir WhatsApp, tu carrito se vaciará. Envía el mensaje para solicitar la confirmación de disponibilidad.</p>
 
         </div>
 

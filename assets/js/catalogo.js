@@ -874,6 +874,10 @@ document.addEventListener(
                                 'noopener'
                             );
 
+                            carrito = [];
+                            guardarCarrito();
+                            pintarCarrito();
+
                         }
                     );
 
