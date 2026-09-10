@@ -83,8 +83,10 @@ $orderColumns = [
     0 => 'p.nombre',
     1 => 'c.nombre',
     2 => 'p.stock_actual',
-    3 => 'p.stock_minimo',
-    4 => 'p.stock_actual'
+    3 => 'COALESCE(p.costo_referencia, 0)',
+    4 => 'p.stock_actual * COALESCE(p.costo_referencia, 0)',
+    5 => 'p.stock_minimo',
+    6 => 'p.stock_actual'
 
 ];
 
@@ -164,7 +166,9 @@ $total =
 ============================================================ */
 
 $sqlFiltered = "
-    SELECT COUNT(*) AS total
+    SELECT
+        COUNT(*) AS total,
+        COALESCE(SUM(p.stock_actual * COALESCE(p.costo_referencia, 0)), 0) AS valor_stock_total
 
     FROM productos p
 
@@ -193,11 +197,9 @@ if ($types !== '') {
 $stmtFiltered->execute();
 
 
-$filtered =
-    (int)
-    $stmtFiltered
-        ->get_result()
-        ->fetch_assoc()['total'];
+$resumenFiltrado = $stmtFiltered->get_result()->fetch_assoc();
+$filtered = (int) $resumenFiltrado['total'];
+$valorStockTotal = (float) $resumenFiltrado['valor_stock_total'];
 
 
 /* ============================================================
@@ -212,6 +214,8 @@ $sql = "
 
         p.stock_actual,
         p.stock_minimo,
+        COALESCE(p.costo_referencia, 0) AS costo_unitario,
+        p.stock_actual * COALESCE(p.costo_referencia, 0) AS valor_stock,
 
         c.nombre AS categoria
 
@@ -408,6 +412,10 @@ while ($row = $result->fetch_assoc()) {
                 3
             ),
 
+        'costo_unitario' => (float) $row['costo_unitario'],
+
+        'valor_stock' => (float) $row['valor_stock'],
+
         'estado' =>
             $estado,
 
@@ -427,6 +435,8 @@ echo json_encode(
 
         'recordsFiltered' =>
             $filtered,
+
+        'valor_stock_total' => $valorStockTotal,
 
         'data' =>
             $data

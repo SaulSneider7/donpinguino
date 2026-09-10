@@ -18,6 +18,10 @@ require_once __DIR__ . '/../../includes/navbar.php';
         <p class="text-muted mb-0">
             Inventario actual y movimientos de productos.
         </p>
+        <p class="small text-muted mt-2 mb-0">
+            Valor del stock = stock actual × costo unitario registrado.
+            Representa la inversión en las existencias actuales. El costo se actualiza con el promedio ponderado de las compras.
+        </p>
 
     </div>
 
@@ -38,11 +42,24 @@ require_once __DIR__ . '/../../includes/navbar.php';
                         <th>Producto</th>
                         <th>Categoría</th>
                         <th>Stock actual</th>
+                        <th>Costo unitario</th>
+                        <th>Valor del stock</th>
                         <th>Stock mínimo</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
+
+                    <tfoot class="table-light">
+                    <tr>
+                        <th colspan="4" scope="row" class="text-end">
+                            Total valor del stock
+                            <div class="small fw-normal text-muted">Todos los productos de la búsqueda, incluidas las demás páginas.</div>
+                        </th>
+                        <th id="totalValorStock" class="text-end text-nowrap" aria-live="polite">—</th>
+                        <td colspan="3"></td>
+                    </tr>
+                    </tfoot>
 
                 </table>
 
@@ -400,6 +417,17 @@ document.addEventListener('DOMContentLoaded', function () {
             processing: true,
             serverSide: true,
 
+            drawCallback: function () {
+                const respuesta = this.api().ajax.json();
+                const total = respuesta?.valor_stock_total;
+                $('#totalValorStock').text(
+                    total == null ? '—' : new Intl.NumberFormat('es-PE', {
+                        style: 'currency',
+                        currency: 'PEN'
+                    }).format(Number(total))
+                );
+            },
+
             ajax: {
 
                 url:
@@ -428,6 +456,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 {
                     data: 'stock_actual'
+                },
+
+                {
+                    data: 'costo_unitario',
+                    className: 'text-end text-nowrap',
+                    render: $.fn.dataTable.render.number(',', '.', 2, 'S/ ')
+                },
+
+                {
+                    data: 'valor_stock',
+                    className: 'text-end text-nowrap fw-bold',
+                    render: $.fn.dataTable.render.number(',', '.', 2, 'S/ ')
                 },
 
                 {

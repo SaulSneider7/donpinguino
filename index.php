@@ -822,7 +822,7 @@ $datosSchema = [
     <div
         class="
             text-center
-            text-muted
+            text-light
             py-5
             d-none
         "
@@ -864,7 +864,7 @@ $datosSchema = [
                 Tu pedido
             </h5>
 
-            <div class="small text-muted">
+            <div class="small text-light">
                 Don Pingüino
             </div>
 
@@ -918,7 +918,7 @@ $datosSchema = [
 
             <div class="mb-2">
 
-                <div class="small text-muted text-center mb-2">
+                <div class="small text-light text-center mb-2">
                     ¿A qué número deseas enviar el pedido?
                 </div>
 
@@ -936,7 +936,7 @@ $datosSchema = [
 
                     <i class="fa-brands fa-whatsapp me-2"></i>
 
-                    Pedir por WhatsApp 1
+                    Pingüino César
 
                 </button>
 
@@ -950,13 +950,11 @@ $datosSchema = [
 
                     <i class="fa-brands fa-whatsapp me-2"></i>
 
-                    Pedir por WhatsApp 2
+                    Pingüino Richard
 
                 </button>
 
             </div>
-
-            <p class="small text-muted text-center mt-3 mb-0">Al abrir WhatsApp, tu carrito se vaciará. Envía el mensaje para solicitar la confirmación de disponibilidad.</p>
 
         </div>
 
@@ -970,7 +968,7 @@ $datosSchema = [
      FOOTER
 ========================================================= -->
 
-<footer class="bg-dark text-white py-4 mt-5 border-top border-secondary">
+<footer class="text-white py-4 mt-5 border-top border-secondary">
 
     <div class="container text-center">
 
@@ -1002,6 +1000,8 @@ $datosSchema = [
 </footer>
 
 
+<!-- Efecto de nieve -->
+<script defer src="https://app.embed.im/snow.js" async></script>
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
@@ -1012,17 +1012,9 @@ $datosSchema = [
 
 window.CATALOGO_CONFIG = {
 
-    whatsapp1:
-        '<?= htmlspecialchars(
-            WHATSAPP_PEDIDOS_1,
-            ENT_QUOTES
-        ) ?>',
+    whatsapp1: '51963755853',
 
-    whatsapp2:
-        '<?= htmlspecialchars(
-            WHATSAPP_PEDIDOS_2,
-            ENT_QUOTES
-        ) ?>'
+    whatsapp2: '51927056028'
 
 };
 
