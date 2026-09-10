@@ -269,6 +269,12 @@ $datosSchema = [
 
 <body class="bg-light">
 
+<!-- =========================================================
+     TOP BAR 24/7
+========================================================= -->
+<div class="bg-warning text-dark text-center py-2 px-3 fw-bold shadow-sm" style="font-size: 0.9rem; letter-spacing: 0.5px; border-bottom: 2px solid #e0a800;">
+    <i class="fa-solid fa-clock fa-spin me-2" style="animation-duration: 3s;"></i> ATENCIÓN LAS 24 HORAS, 24/7
+</div>
 
 <!-- =========================================================
      NAVBAR
@@ -840,6 +846,81 @@ $datosSchema = [
         </div>
 
     </div>
+
+    <!-- AVISOS Y MENSAJE DE SALUD -->
+    <div class="avisos-finales mt-5 mb-2 text-center px-3">
+        
+        <!-- MENSAJE DE SALUD CON IMAGEN FLOTANTE -->
+        <div class="mensaje-salud d-flex align-items-center justify-content-center p-3 p-md-4 mt-4 w-100 rounded-4 shadow-lg" style="background-color: #212529; border: 2px solid #ffc107;">
+            
+            <img 
+                src="<?= CATALOGO_BASE_URL ?>assets/img/no_tomar_bebidas_alcoholicas.png" 
+                alt="Prohibido tomar en exceso" 
+                class="imagen-flotante flex-shrink-0 me-3 me-md-4"
+            >
+            
+            <div class="letras-salud fw-bold text-uppercase text-white" style="font-size: clamp(1.1rem, 2.5vw, 1.8rem); letter-spacing: 1px; text-align: left; line-height: 1.2;">
+                TOMAR BEBIDAS ALCOHÓLICAS EN EXCESO <span class="text-warning d-block d-sm-inline mt-1 mt-sm-0">ES DAÑINO</span>
+            </div>
+
+        </div>
+    </div>
+
+    <style>
+        .mensaje-salud {
+            transition: all 0.4s ease;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .imagen-flotante {
+            width: 85px;
+            height: auto;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(255, 193, 7, 0.2));
+            pointer-events: none;
+        }
+
+        /* Animación para hacer flotar la imagen */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg) scale(1.05); }
+            100% { transform: translateY(0px) rotate(-5deg); }
+        }
+
+        /* Efecto interactivo al pasar el mouse por la caja */
+        .letras-salud {
+            transition: all 0.4s ease;
+        }
+        
+        .mensaje-salud:hover {
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.25) !important;
+            transform: translateY(-4px);
+            border-color: #ffca2c !important;
+        }
+
+        .mensaje-salud:hover .letras-salud {
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+        }
+
+        .mensaje-salud:hover .imagen-flotante {
+            animation: floatHover 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(255, 193, 7, 0.4));
+        }
+
+        @keyframes floatHover {
+            0% { transform: translateY(-5px) rotate(-10deg) scale(1.1); }
+            50% { transform: translateY(-20px) rotate(10deg) scale(1.15); }
+            100% { transform: translateY(-5px) rotate(-10deg) scale(1.1); }
+        }
+
+        /* Ajustes responsivos */
+        @media (max-width: 768px) {
+            .imagen-flotante {
+                width: 60px;
+            }
+        }
+    </style>
 
 </main>
 
