@@ -7,6 +7,7 @@ header(
 );
 
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/validar_duplicados.php';
 
 
 function responder(
@@ -69,69 +70,7 @@ if (mb_strlen($nombre) > 150) {
 }
 
 
-/*
- * Evitamos crear el mismo teléfono dos veces
- * cuando sí se proporcionó teléfono.
- */
-if ($telefono !== '') {
-
-    $sqlExiste = "
-        SELECT
-            id,
-            nombre,
-            telefono
-
-        FROM clientes
-
-        WHERE
-            telefono = ?
-            AND activo = 1
-
-        LIMIT 1
-    ";
-
-
-    $stmtExiste =
-        $conn->prepare(
-            $sqlExiste
-        );
-
-
-    $stmtExiste->bind_param(
-        's',
-        $telefono
-    );
-
-
-    $stmtExiste->execute();
-
-
-    $existente =
-        $stmtExiste
-            ->get_result()
-            ->fetch_assoc();
-
-
-    if ($existente) {
-
-        responder(
-            false,
-            'Ya existe un cliente con ese teléfono.',
-            [
-                'cliente_existente' => [
-                    'id' =>
-                        (int) $existente['id'],
-
-                    'nombre' =>
-                        $existente['nombre'],
-
-                    'telefono' =>
-                        $existente['telefono']
-                ]
-            ]
-        );
-    }
-}
+validarDuplicadosCliente($conn, $nombre, $telefono);
 
 
 $sql = "

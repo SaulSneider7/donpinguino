@@ -7,6 +7,7 @@ header(
 );
 
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/validar_duplicados.php';
 
 
 function responder(
@@ -108,6 +109,8 @@ if (
 /* ============================================================
    CREAR
 ============================================================ */
+
+validarDuplicadosCliente($conn, $nombre, $telefono, $id);
 
 if ($id === null) {
 
