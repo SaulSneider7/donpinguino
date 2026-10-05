@@ -22,3 +22,8 @@ if ($conn->connect_error) {
 }
 
 $conn->set_charset('utf8mb4');
+
+// Zona horaria de Per煤 para esta conexi贸n MySQL
+if (!$conn->query("SET time_zone = '-05:00'")) {
+    die('No se pudo configurar la zona horaria de MySQL.');
+}
