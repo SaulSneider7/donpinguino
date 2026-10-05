@@ -978,6 +978,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         </div>
 
+                        <details class="detalle-consumo mt-3 border-top pt-2" data-venta-id="${Number(venta.id)}">
+                            <summary class="text-primary fw-semibold" style="cursor: pointer;">
+                                Ver consumo
+                            </summary>
+                            <div class="contenido-consumo mt-2" aria-live="polite"></div>
+                        </details>
+
                     </div>
 
                 `);
@@ -985,6 +992,91 @@ document.addEventListener('DOMContentLoaded', function () {
         );
     }
 
+
+    function cargarConsumoVenta(detalle) {
+        const $detalle = $(detalle);
+        if ($detalle.data('cargado') || $detalle.data('cargando')) {
+            return;
+        }
+
+        const $contenido = $detalle.find('.contenido-consumo');
+        $detalle.data('cargando', true);
+        $contenido.attr('aria-busy', 'true').html(
+            '<div class="text-muted py-2" role="status">Cargando consumo...</div>'
+        );
+
+        $.ajax({
+            url: '<?= BASE_URL ?>ajax/ventas/obtener.php',
+            type: 'GET',
+            dataType: 'json',
+            data: { id: $detalle.data('venta-id') }
+        }).done(function (response) {
+            if (!response.success || !Array.isArray(response.data?.productos)) {
+                mostrarError();
+                return;
+            }
+
+            const productos = response.data.productos;
+            $contenido.empty();
+
+            if (productos.length === 0) {
+                $contenido.text('Esta venta no tiene productos registrados.');
+            } else {
+                const $tabla = $('<table class="table table-sm align-middle mb-0">');
+                $tabla.append(
+                    '<thead><tr><th scope="col">Producto</th>' +
+                    '<th scope="col" class="text-end">Cantidad</th>' +
+                    '<th scope="col" class="text-end">Precio unit.</th>' +
+                    '<th scope="col" class="text-end">Descuento</th>' +
+                    '<th scope="col" class="text-end">Importe</th></tr></thead>'
+                );
+                const $cuerpo = $('<tbody>');
+                const moneda = valor => 'S/ ' + Number(valor ?? 0).toFixed(2);
+
+                productos.forEach(function (producto) {
+                    const $fila = $('<tr>');
+                    const $producto = $('<td>');
+                    $('<div class="fw-semibold">').text(producto.nombre_producto).appendTo($producto);
+                    $('<div class="small text-muted">').text(producto.presentacion_producto ?? '').appendTo($producto);
+                    if (producto.promocion_nombre) {
+                        $('<div class="small text-success">').text(producto.promocion_nombre).appendTo($producto);
+                    }
+                    $fila.append($producto);
+                    $('<td class="text-end">').text(Number(producto.cantidad)).appendTo($fila);
+                    $('<td class="text-end text-nowrap">').text(moneda(producto.precio_venta_base)).appendTo($fila);
+                    const descuento = Number(producto.descuento_promocion ?? 0)
+                        + Number(producto.descuento_manual ?? 0);
+                    $('<td class="text-end text-nowrap">').text(moneda(descuento)).appendTo($fila);
+                    $('<td class="text-end text-nowrap fw-semibold">').text(moneda(producto.subtotal_final)).appendTo($fila);
+                    $cuerpo.append($fila);
+                });
+
+                $tabla.append($cuerpo);
+                $('<div class="table-responsive">').append($tabla).appendTo($contenido);
+            }
+
+            $detalle.data('cargado', true);
+        }).fail(mostrarError).always(function () {
+            $detalle.data('cargando', false);
+            $contenido.attr('aria-busy', 'false');
+        });
+
+        function mostrarError() {
+            $contenido.empty();
+            $('<div class="text-danger mb-2" role="alert">')
+                .text('No se pudo cargar el consumo de esta venta.').appendTo($contenido);
+            $('<button type="button" class="btn btn-outline-secondary btn-sm">')
+                .text('Reintentar').on('click', function () {
+                    cargarConsumoVenta(detalle);
+                }).appendTo($contenido);
+        }
+    }
+
+    document.getElementById('listaVentasPendientes').addEventListener('toggle', function (event) {
+        if (event.target.matches('.detalle-consumo') && event.target.open) {
+            cargarConsumoVenta(event.target);
+        }
+    }, true);
 
     // ========================================================
     // ABRIR REGISTRO DE PAGO
